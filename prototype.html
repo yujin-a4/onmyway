@@ -809,42 +809,49 @@
       margin-left: 2px;
     }
 
-    .route-btns {
+    /* Route toggle panel — map right overlay */
+    .route-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 40;
       display: flex;
+      flex-direction: column;
       gap: 6px;
-      align-items: center;
     }
 
     .route-btn {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 11.5px;
+      border-radius: 22px;
+      padding: 7px 11px 7px 8px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
       transition: all .2s;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      white-space: nowrap;
     }
 
     .route-btn.commute-on {
-      background: #f5f3ff;
-      color: #7c3aed;
+      background: #7c3aed;
+      color: #fff;
     }
 
     .route-btn.commute-off {
-      background: #f3f4f6;
+      background: rgba(255,255,255,0.92);
       color: #9ca3af;
     }
 
     .route-btn.weekend-on {
-      background: #ecfdf5;
-      color: #059669;
+      background: #059669;
+      color: #fff;
     }
 
     .route-btn.weekend-off {
-      background: #f3f4f6;
+      background: rgba(255,255,255,0.92);
       color: #9ca3af;
     }
 
@@ -852,24 +859,14 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
+      flex-shrink: 0;
       transition: background .2s;
     }
 
-    .route-btn.commute-on .route-dot {
-      background: #7c3aed;
-    }
-
-    .route-btn.commute-off .route-dot {
-      background: #d1d5db;
-    }
-
-    .route-btn.weekend-on .route-dot {
-      background: #059669;
-    }
-
-    .route-btn.weekend-off .route-dot {
-      background: #d1d5db;
-    }
+    .route-btn.commute-on .route-dot { background: rgba(255,255,255,0.8); }
+    .route-btn.commute-off .route-dot { background: #d1d5db; }
+    .route-btn.weekend-on .route-dot { background: rgba(255,255,255,0.8); }
+    .route-btn.weekend-off .route-dot { background: #d1d5db; }
 
     /* Category filter */
     .cat-scroll {
@@ -1873,6 +1870,66 @@
         opacity: 0;
       }
     }
+
+    /* ── 맞춤형 정보 추천 시트 ── */
+    .rec-section-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 12px;
+    }
+
+    .rec-chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .rec-chip {
+      padding: 10px 22px;
+      border: 2px solid #e5e7eb;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      background: #fff;
+      cursor: pointer;
+      transition: all .18s;
+    }
+
+    .rec-chip.on {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+
+    .rec-pref-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-pref-chip {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #374151;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: all .18s;
+    }
+
+    .rec-pref-chip.on {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+      font-weight: 700;
+    }
+
   </style>
 </head>
 
@@ -2107,8 +2164,8 @@
             <div class="menu-name">가는김에</div>
           </div>
           <div class="menu-item">
-            <div class="menu-icon-wrap green" style="position:relative">
-              ⛰️<span class="badge-n">N</span>
+            <div class="menu-icon-wrap green">
+              ⛰️
             </div>
             <div class="menu-name">등산셔틀</div>
           </div>
@@ -2214,7 +2271,7 @@
           </svg>
         </div>
         <div class="consent-title">가는김에</div>
-        <div class="consent-sub">내 이동 패턴을 분석해 자주 가는 동선 위의<br><strong>'지나가다 들를 수 있는'</strong> 장소를 추천해 드려요.</div>
+        <div class="consent-sub">내 이동 패턴을 분석해 자주 가는 동선 위의<br><strong>지나가다 들를 수 있는</strong> 장소를 추천해 드려요.</div>
 
         <div class="consent-item required" id="consent-item-commute">
           <div class="consent-row">
@@ -2243,9 +2300,39 @@
           <div class="consent-desc">장소 추천 푸시를 받습니다.</div>
         </div>
 
-        <button class="consent-btn" id="consent-btn" onclick="agreeAndLoad()" disabled
-          style="background:#d1d5db;cursor:not-allowed;opacity:1">동의하고 시작하기</button>
+        <button class="consent-btn" id="consent-btn" onclick="openRecommend()" disabled
+          style="background:#d1d5db;cursor:not-allowed;opacity:1">다음으로</button>
         <div class="consent-cancel" onclick="closeConsent()">취소</div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════
+     S3-B · 맞춤형 정보 추천 바텀시트
+════════════════════════════════════ -->
+    <div id="s-recommend" class="screen">
+      <div class="consent-sheet" id="recommend-sheet">
+        <div class="drag-handle"></div>
+
+        <div style="padding:0 4px">
+          <p class="rec-section-label">당신은 현재 어떤 사람입니까</p>
+          <div class="rec-chip-row" id="user-type-row">
+            <button class="rec-chip" data-group="type" data-val="직장인" onclick="pickChip(this)">직장인</button>
+            <button class="rec-chip" data-group="type" data-val="대학생" onclick="pickChip(this)">대학생</button>
+            <button class="rec-chip" data-group="type" data-val="기타" onclick="pickChip(this)">기타</button>
+          </div>
+
+          <p class="rec-section-label" style="margin-top:22px">어떤 정보를 추천 받고 싶으세요?</p>
+          <div class="rec-pref-list" id="pref-list">
+            <button class="rec-pref-chip" data-group="pref" data-val="breakfast" onclick="togglePref(this)">간단히 아침 한 끼 할 수 있는 밥집</button>
+            <button class="rec-pref-chip" data-group="pref" data-val="after-work" onclick="togglePref(this)">퇴근 후 동료들과 술 한잔 할 수 있는 술집</button>
+            <button class="rec-pref-chip" data-group="pref" data-val="cafe" onclick="togglePref(this)">업무 집중할 수 있는 조용한 카페</button>
+            <button class="rec-pref-chip" data-group="pref" data-val="errands" onclick="togglePref(this)">퇴근길에 처리할 수 있는 생활편의 장소</button>
+          </div>
+        </div>
+
+        <button class="consent-btn" id="rec-btn" onclick="startAnalysis()" style="margin-top:28px">내 생활권 분석하기</button>
+        <div class="consent-cancel" onclick="closeRecommend()">이전으로</div>
       </div>
     </div>
 
@@ -2289,14 +2376,6 @@
             <button class="map-back" onclick="goTo('s-travel')">←</button>
             <span class="map-title">📍 가는김에</span>
           </div>
-          <div class="route-btns">
-            <button class="route-btn commute-on" id="commute-btn" onclick="toggleCommuteRoute()">
-              <div class="route-dot"></div><span>출퇴근</span>
-            </button>
-            <button class="route-btn weekend-on" id="weekend-btn" onclick="toggleWeekendRoute()">
-              <div class="route-dot"></div><span>주말</span>
-            </button>
-          </div>
         </div>
         <div class="cat-scroll" id="cat-scroll">
           <button class="cat-chip on" data-filter="all" onclick="setCat(this)">전체</button>
@@ -2319,6 +2398,16 @@
           <span class="legend-item"><i class="legend-dot" style="background:#059669"></i>노선 근접</span>
           <span class="legend-item"><i class="legend-dot" style="background:#f59e0b"></i>중간</span>
           <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>노선 멀</span>
+        </div>
+
+        <!-- 노선 토글 패널 (지도 우측 오버레이) -->
+        <div class="route-panel">
+          <button class="route-btn commute-on" id="commute-btn" onclick="toggleCommuteRoute()">
+            <div class="route-dot"></div><span>출퇴근</span>
+          </button>
+          <button class="route-btn weekend-on" id="weekend-btn" onclick="toggleWeekendRoute()">
+            <div class="route-dot"></div><span>주말</span>
+          </button>
         </div>
 
         <!-- 컨트롤 버튼 -->
@@ -2612,13 +2701,83 @@
     function closeConsent() {
       _dismissConsent(() => { });
     }
-    function agreeAndLoad() {
+    /* 다음으로 → 맞춤형 정보 추천 시트 열기 */
+    function openRecommend() {
       const btn = document.getElementById('consent-btn');
       if (btn && btn.disabled) return;
       _dismissConsent(() => {
+        const sc = document.getElementById('s-recommend');
+        const sheet = document.getElementById('recommend-sheet');
+        sheet.style.transform = 'translateY(100%)';
+        sc.style.background = 'rgba(0,0,0,0)';
+        sc.style.justifyContent = 'flex-end';
+        sc.classList.add('active');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            sheet.style.transform = 'translateY(0)';
+            sc.style.background = 'rgba(0,0,0,0.55)';
+          });
+        });
+      });
+    }
+    function closeRecommend() {
+      const sc = document.getElementById('s-recommend');
+      const sheet = document.getElementById('recommend-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => { sc.classList.remove('active'); openConsent(); }, 380);
+    }
+    document.getElementById('s-recommend').addEventListener('click', function(e) {
+      if (!e.target.closest('#recommend-sheet')) closeRecommend();
+    });
+
+    /* 칩 선택 로직 */
+    const PREF_BY_TYPE = {
+      '직장인': [
+        { val:'breakfast', label:'간단히 아침 한 끼 할 수 있는 밥집' },
+        { val:'after-work', label:'퇴근 후 동료들과 술 한잔 할 수 있는 술집' },
+        { val:'cafe', label:'업무 집중할 수 있는 조용한 카페' },
+        { val:'errands', label:'퇴근길에 처리할 수 있는 생활편의 장소' },
+      ],
+      '대학생': [
+        { val:'breakfast', label:'간단히 아침 한 끼 할 수 있는 밥집' },
+        { val:'after-study', label:'알바 끝나고 친구들과 술 한 잔 할 수 있는 술집' },
+        { val:'study-cafe', label:'시험 기간에 공부할 수 있는 스터디카페' },
+        { val:'culture', label:'주말에 혼자 즐길 수 있는 문화·전시 공간' },
+      ],
+      '기타': [
+        { val:'breakfast', label:'간단히 아침 한 끼 할 수 있는 밥집' },
+        { val:'after-work', label:'퇴근 후 동료들과 술 한잔 할 수 있는 술집' },
+        { val:'workspace', label:'집중할 수 있는 공유 오피스·작업 공간' },
+        { val:'leisure', label:'자유로운 시간에 들를 수 있는 취미 장소' },
+      ],
+    };
+    function pickChip(el) {
+      const group = el.dataset.group;
+      document.querySelectorAll(`.rec-chip[data-group="${group}"]`).forEach(b => b.classList.remove('on'));
+      el.classList.add('on');
+      // 추천 정보 칩 갱신
+      const prefs = PREF_BY_TYPE[el.dataset.val] || PREF_BY_TYPE['기타'];
+      const list = document.getElementById('pref-list');
+      list.innerHTML = prefs.map(p =>
+        `<button class="rec-pref-chip" data-group="pref" data-val="${p.val}" onclick="togglePref(this)">${p.label}</button>`
+      ).join('');
+    }
+    function togglePref(el) {
+      el.classList.toggle('on');
+    }
+
+    /* 내 생활권 분석하기 → 로딩 → 지도 */
+    function startAnalysis() {
+      const sc = document.getElementById('s-recommend');
+      const sheet = document.getElementById('recommend-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => {
+        sc.classList.remove('active');
         goTo('s-loading');
         startLoading();
-      });
+      }, 380);
     }
     // 바텀시트 외부(dim 영역) 클릭 시 닫기
     document.getElementById('s-consent').addEventListener('click', function (e) {
@@ -2659,6 +2818,7 @@
         setTimeout(showPush, 4000);
       }, 3800);
     }
+
 
     /* ─────────────────────────────────────
        WAYPOINT EDIT
@@ -2823,39 +2983,65 @@
       { lat: 37.5713, lng: 126.9920, id: 'wp-1', icon: '🏢', label: '회사', color: '#059669' },
     ];
 
-    // 출퇴근 노선 (노원 → 종로3가)
+    // ── 출퇴근 노선 ──
+    // 4호선 실제 역 좌표: 노원 → 창동 → 쌍문 → 수유 → 미아 → 미아사거리 → 길음 → 성신여대 → 한성대 → 혜화
+    // 이후 도보+버스로 종로3가 (회사)
     const COMMUTE_PATH = [
-      [37.6559, 127.0642],
-      [37.6380, 127.0510],
-      [37.6200, 127.0330],
-      [37.6050, 127.0200],
-      [37.5930, 127.0120],
-      [37.5822, 127.0020],  // 혜화
-      [37.5713, 126.9920],  // 종로3가 (회사)
+      [37.6559, 127.0642],  // 노원역 (4호선)
+      [37.6527, 127.0474],  // 창동역 (4호선)
+      [37.6490, 127.0356],  // 쌍문역 (4호선)
+      [37.6378, 127.0248],  // 수유역 (4호선)
+      [37.6283, 127.0304],  // 미아역 (4호선)
+      [37.6218, 127.0299],  // 미아사거리역 (4호선)
+      [37.6097, 127.0218],  // 길음역 (4호선)
+      [37.5924, 127.0164],  // 성신여대입구역 (4호선)
+      [37.5888, 127.0107],  // 한성대입구역 (4호선)
+      [37.5822, 127.0020],  // 혜화역 (4호선)
+      // 버스 환승 후 종로 방향 (도로 경유)
+      [37.5800, 126.9983],
+      [37.5777, 126.9950],
+      [37.5749, 126.9934],
+      [37.5713, 126.9920],  // 종로3가역 (회사)
     ];
 
-    // 퇴근 노선 (약간 다른 경로, 점선)
+    // 퇴근 노선 (버스 → 종로3가 → 혜화 → 4호선 역순, 점선)
     const RETURN_PATH = [
-      [37.5713, 126.9920],
-      [37.5760, 126.9980],
-      [37.5840, 127.0050],
-      [37.5950, 127.0150],
-      [37.6100, 127.0250],
-      [37.6280, 127.0400],
-      [37.6559, 127.0642],
+      [37.5713, 126.9920],  // 종로3가역
+      [37.5749, 126.9934],
+      [37.5777, 126.9950],
+      [37.5800, 126.9983],
+      [37.5822, 127.0020],  // 혜화역
+      [37.5888, 127.0107],  // 한성대입구역
+      [37.5924, 127.0164],  // 성신여대입구역
+      [37.6097, 127.0218],  // 길음역
+      [37.6218, 127.0299],  // 미아사거리역
+      [37.6283, 127.0304],  // 미아역
+      [37.6378, 127.0248],  // 수유역
+      [37.6490, 127.0356],  // 쌍문역
+      [37.6527, 127.0474],  // 창동역
+      [37.6559, 127.0642],  // 노원역
     ];
 
-    // 주말 노선 (노원 → 여의나루)
+    // ── 주말 노선 ──
+    // 4호선: 노원 → 혜화, 이후 5호선 환승: 광화문 → 여의도 → 여의나루
     const WEEKEND_PATH = [
-      [37.6559, 127.0642],
-      [37.6200, 127.0200],
-      [37.5950, 127.0050],
-      [37.5822, 127.0020],  // 혜화
-      [37.5713, 126.9920],  // 종로
-      [37.5600, 126.9750],
-      [37.5450, 126.9550],
-      [37.5300, 126.9400],
-      [37.5283, 126.9336],  // 여의나루
+      [37.6559, 127.0642],  // 노원역 (4호선)
+      [37.6527, 127.0474],  // 창동역
+      [37.6378, 127.0248],  // 수유역
+      [37.6097, 127.0218],  // 길음역
+      [37.5822, 127.0020],  // 혜화역 (4호선)
+      // 도보로 동대문역사문화공원 방향 이동 후 5호선 환승
+      [37.5799, 126.9985],
+      [37.5776, 126.9955],
+      [37.5745, 126.9843],  // 광화문역 인근 (5호선)
+      [37.5736, 126.9763],  // 종로3가 (5호선)
+      [37.5698, 126.9708],  // 을지로4가 (5호선)
+      [37.5668, 126.9638],  // 동대문역사문화공원 (5호선)
+      [37.5600, 126.9644],  // 청구 (5호선)
+      [37.5550, 126.9620],  // 신금호 (5호선)
+      [37.5460, 126.9508],  // 마포 (5호선)
+      [37.5308, 126.9325],  // 여의도역 (5호선)
+      [37.5283, 126.9336],  // 여의나루역 (5호선)
     ];
 
     // ── 노선 거리 기반 색상 ──
@@ -2939,24 +3125,24 @@
       // 지도 UI 컨트롤 비활성화 (직접 버튼 사용)
       // kakaoMap.setZoomable(true);
 
-      // ── 출퇴근 노선 (보라, 실선) ──
+      // ── 출퇴근 노선 (4호선 보라, 실선) ──
       commutePolyline = new kakao.maps.Polyline({
         path: COMMUTE_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 7, strokeColor: '#7c3aed', strokeOpacity: 0.9, strokeStyle: 'solid'
+        strokeWeight: 8, strokeColor: '#7c3aed', strokeOpacity: 0.92, strokeStyle: 'solid'
       });
       commutePolyline.setMap(kakaoMap);
 
-      // ── 퇴근 노선 (주황, 점선) ──
+      // ── 퇴근 노선 (버스/도로 주황, 점선) ──
       commuteReturnPoly = new kakao.maps.Polyline({
         path: RETURN_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 5, strokeColor: '#f97316', strokeOpacity: 0.85, strokeStyle: 'shortdot'
+        strokeWeight: 6, strokeColor: '#f97316', strokeOpacity: 0.88, strokeStyle: 'shortdot'
       });
       commuteReturnPoly.setMap(kakaoMap);
 
-      // ── 주말 노선 (청록) ──
+      // ── 주말 노선 (4호선+5호선 환승, 청록, 실선) ──
       weekendPolyline = new kakao.maps.Polyline({
         path: WEEKEND_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 6, strokeColor: '#059669', strokeOpacity: 0.9, strokeStyle: 'solid'
+        strokeWeight: 7, strokeColor: '#059669', strokeOpacity: 0.92, strokeStyle: 'solid'
       });
       weekendPolyline.setMap(kakaoMap);
 
