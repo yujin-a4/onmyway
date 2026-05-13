@@ -3200,14 +3200,14 @@
     // ── 사용자 유형별 노선 설정 ──
     const ROUTE_CONFIG = {
       '대학생': [
-        { path: STUDENT_PATH1, color: '#7c3aed', style: 'solid', weight: 8, label: '등하교', busPath: null, desc: '4호선 노원 ↔ 충무로' },
-        { path: STUDENT_PATH2, color: '#f97316', style: 'solid', weight: 8, label: '알바', busPath: null, desc: '7호선 노원 ↔ 군자' },
+        { path: STUDENT_PATH1, color: '#7c3aed', style: 'solid', weight: 8, label: '등하교', busPath: null, desc: '4호선 노원 ↔ 충무로', from: '노원', to: '충무로' },
+        { path: STUDENT_PATH2, color: '#f97316', style: 'solid', weight: 8, label: '알바', busPath: null, desc: '7호선 노원 ↔ 군자', from: '노원', to: '군자' },
       ],
       '직장인': [
-        { path: WORKER_SUBWAY_PATH, color: '#7c3aed', style: 'solid', weight: 8, label: '출퇴근', busPath: WORKER_BUS_PATH, desc: '4호선 노원 ↔ 혜화 + 버스' },
+        { path: WORKER_SUBWAY_PATH, color: '#7c3aed', style: 'solid', weight: 8, label: '출퇴근', busPath: WORKER_BUS_PATH, desc: '4호선 노원 ↔ 혜화 + 버스', from: '노원', to: '혜화' },
       ],
       '기타': [
-        { path: FREELANCE_PATH, color: '#2563eb', style: 'solid', weight: 8, label: '자주가는 노선', busPath: null, desc: '2·3호선 을지로4가 ↔ 종로3가' },
+        { path: FREELANCE_PATH, color: '#2563eb', style: 'solid', weight: 8, label: '자주가는 노선', busPath: null, desc: '2·3호선 을지로4가 ↔ 종로3가', from: '을지로4가', to: '종로3가' },
       ],
     };
 
@@ -3237,7 +3237,7 @@
       const btnEl = document.getElementById('rn-btn');
       if (curEl) curEl.textContent = '1';
       if (totEl) totEl.textContent = String(total);
-      if (badgeEl) badgeEl.textContent = config[0].label + ' 노선';
+      if (badgeEl) badgeEl.textContent = config[0].from + ' → ' + config[0].to;
       if (inputEl) inputEl.value = '';
       if (btnEl) {
         btnEl.textContent = total > 1 ? '다음 노선 보기 →' : '내 지도 보기';
@@ -3310,7 +3310,7 @@
         const inputEl = document.getElementById('rn-input');
         const btnEl = document.getElementById('rn-btn');
         if (curEl) curEl.textContent = String(rnStep + 1);
-        if (badgeEl) badgeEl.textContent = config[rnStep].label + ' 노선';
+        if (badgeEl) badgeEl.textContent = config[rnStep].from + ' → ' + config[rnStep].to;
         if (inputEl) inputEl.value = '';
         if (btnEl) {
           btnEl.classList.remove('active');
