@@ -1930,6 +1930,72 @@
       font-weight: 700;
     }
 
+    /* ── 노선명 등록 화면 ── */
+    .rn-map-bg { position:absolute; inset:0; z-index:0; }
+    .rn-top-card {
+      position:absolute; top:0; left:0; right:0; z-index:10;
+      background:#fff; padding:20px 20px 18px;
+      box-shadow:0 2px 16px rgba(0,0,0,.12);
+      border-radius:0 0 20px 20px;
+    }
+    .rn-step-row {
+      display:flex; gap:5px; align-items:center; margin-bottom:10px;
+    }
+    .rn-step-dot {
+      width:6px; height:6px; border-radius:50%; background:#e5e7eb; transition:all .2s;
+    }
+    .rn-step-dot.active {
+      width:20px; border-radius:3px; background:#7c3aed;
+    }
+    .rn-sub-label { font-size:11px; color:#9ca3af; font-weight:600; margin-bottom:6px; }
+    .rn-route-badge {
+      display:inline-block; font-size:12px; font-weight:700; color:#7c3aed;
+      background:#f5f3ff; padding:3px 10px; border-radius:20px; margin-bottom:10px;
+    }
+    .rn-input {
+      width:100%; border:2px solid #e5e7eb; border-radius:12px;
+      padding:12px 14px; font-size:15px; font-weight:600; color:#111;
+      outline:none; transition:border-color .2s; box-sizing:border-box;
+    }
+    .rn-input:focus { border-color:#7c3aed; }
+    .rn-input::placeholder { color:#d1d5db; font-weight:400; }
+    .rn-bottom-bar {
+      position:absolute; bottom:0; left:0; right:0; z-index:10;
+      padding:16px 20px 24px; background:#fff;
+      border-radius:20px 20px 0 0; box-shadow:0 -2px 14px rgba(0,0,0,.08);
+    }
+    .rn-btn {
+      width:100%; padding:15px; border:none; border-radius:14px;
+      font-size:16px; font-weight:700; color:#fff;
+      background:#d1d5db; cursor:not-allowed; transition:all .2s;
+    }
+    .rn-btn.active { background:#7c3aed; cursor:pointer; }
+
+    /* ── 지도 좌상단 노선 정보 패널 ── */
+    .map-info-panel {
+      position:absolute; top:10px; left:10px; z-index:30;
+      background:rgba(255,255,255,0.96); backdrop-filter:blur(8px);
+      border-radius:14px; padding:11px 13px;
+      box-shadow:0 2px 12px rgba(0,0,0,.16); max-width:190px;
+    }
+    .map-info-title {
+      font-size:10.5px; font-weight:800; color:#111; margin-bottom:8px;
+    }
+    .map-info-route {
+      display:flex; align-items:center; gap:6px; margin-bottom:5px;
+    }
+    .map-info-dot {
+      width:8px; height:8px; border-radius:50%; flex-shrink:0;
+    }
+    .map-info-name { font-size:10px; font-weight:700; color:#374151; }
+    .map-info-desc {
+      font-size:9px; color:#6b7280; font-weight:500;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .map-info-period {
+      font-size:9px; color:#9ca3af; margin-top:7px; border-top:1px solid #f3f4f6; padding-top:6px;
+    }
+
   </style>
 </head>
 
@@ -2336,6 +2402,28 @@
       </div>
     </div>
 
+    <!-- ════════════════════════════════════
+     S4-B · 노선명 등록 화면
+════════════════════════════════════ -->
+    <div id="s-route-naming" class="screen" style="overflow:hidden">
+      <!-- 카카오 지도 배경 -->
+      <div id="kakao-map-naming" class="rn-map-bg"></div>
+
+      <!-- 상단 입력 카드 -->
+      <div class="rn-top-card">
+        <div class="rn-step-row" id="rn-step-row"></div>
+        <div class="rn-sub-label">발견된 노선 <span id="rn-cur">1</span> / <span id="rn-tot">1</span></div>
+        <div class="rn-route-badge" id="rn-badge">노선 1</div>
+        <input class="rn-input" id="rn-input" type="text"
+          placeholder="이 노선의 이름을 지어주세요" oninput="onRnInput()" />
+      </div>
+
+      <!-- 하단 버튼 -->
+      <div class="rn-bottom-bar">
+        <button class="rn-btn" id="rn-btn" onclick="rnNext()">내 지도 보기</button>
+      </div>
+    </div>
+
 
     <!-- ════════════════════════════════════
      S4 · 생활권 분석 로딩
@@ -2390,9 +2478,10 @@
         <!-- 카카오 지도 컨테이너 -->
         <div id="kakao-map" style="position:absolute;inset:0;width:100%;height:100%;z-index:0"></div>
 
-        <div class="map-insight">
-          <strong>noname 이동 패턴 · 72건</strong>
-          <span>노원 ⇄ 혜화/종로3가 중심<br>2026.04.08 - 2026.05.08</span>
+        <div class="map-info-panel" id="map-info-panel">
+          <div class="map-info-title" id="map-info-title">강유진 님의 자주가는 노선</div>
+          <div id="map-info-routes"></div>
+          <div class="map-info-period" id="map-info-period"></div>
         </div>
         <div class="map-legend">
           <span class="legend-item"><i class="legend-dot" style="background:#059669"></i>노선 근접</span>
@@ -2400,15 +2489,8 @@
           <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>노선 멀</span>
         </div>
 
-        <!-- 노선 토글 패널 (지도 우측 오버레이) -->
-        <div class="route-panel">
-          <button class="route-btn commute-on" id="commute-btn" onclick="toggleCommuteRoute()">
-            <div class="route-dot"></div><span>출퇴근</span>
-          </button>
-          <button class="route-btn weekend-on" id="weekend-btn" onclick="toggleWeekendRoute()">
-            <div class="route-dot"></div><span>주말</span>
-          </button>
-        </div>
+        <!-- 노선 토글 패널 (지도 우측 오버레이, JS로 동적 렌더링) -->
+        <div class="route-panel" id="route-panel"></div>
 
         <!-- 컨트롤 버튼 -->
         <div class="map-ctrl" id="map-ctrl">
@@ -2756,6 +2838,7 @@
       const group = el.dataset.group;
       document.querySelectorAll(`.rec-chip[data-group="${group}"]`).forEach(b => b.classList.remove('on'));
       el.classList.add('on');
+      if (group === 'type') selectedUserType = el.dataset.val;  // 사용자 유형 저장
       // 추천 정보 칩 갱신
       const prefs = PREF_BY_TYPE[el.dataset.val] || PREF_BY_TYPE['기타'];
       const list = document.getElementById('pref-list');
@@ -2811,11 +2894,10 @@
         });
       });
 
-      // 3.8초 후 지도로 이동
+      // 3.8초 후 노선명 등록 화면으로 이동
       setTimeout(() => {
-        goTo('s-map');
-        mapInit();
-        setTimeout(showPush, 4000);
+        goTo('s-route-naming');
+        openRouteNaming();
       }, 3800);
     }
 
@@ -2879,6 +2961,13 @@
     ───────────────────────────────────── */
     let commuteOn = true;
     let weekendOn = true;
+
+    /* 사용자 타입 및 노선명 저장 */
+    let selectedUserType = '직장인'; // 기본값
+    let routeNames = [];          // [노선1명, 노선명2명(optional)]
+    let rnStep = 0;               // 현재 등록 단계
+    let namingMap = null;         // 노선명 등록 화면 kakao 지도
+    let namingPolys = [];         // 노선명 화면 폴리라인 저장
 
 
 
@@ -3044,6 +3133,255 @@
       [37.5283, 126.9336],  // 여의나루역 (5호선)
     ];
 
+    // ── 대학생 노선1: 4호선 노원→충무로 (보라 실선) ──
+    const STUDENT_PATH1 = [
+      [37.6559, 127.0642],  // 노원역
+      [37.6527, 127.0474],  // 창동역
+      [37.6490, 127.0356],  // 쌍문역
+      [37.6378, 127.0248],  // 수유역
+      [37.6283, 127.0304],  // 미아역
+      [37.6218, 127.0299],  // 미아사거리역
+      [37.6097, 127.0218],  // 길음역
+      [37.5924, 127.0164],  // 성신여대입구역
+      [37.5888, 127.0107],  // 한성대입구역
+      [37.5822, 127.0020],  // 혜화역
+      [37.5783, 127.0042],  // 동대문역
+      [37.5655, 127.0088],  // 동대문역사문화공원
+      [37.5608, 127.0046],  // 충무로역
+    ];
+
+    // ── 대학생 노선2: 7호선 노원→군자 (주황 실선) ──
+    const STUDENT_PATH2 = [
+      [37.6559, 127.0642],  // 노원역
+      [37.6536, 127.0724],  // 중계역
+      [37.6491, 127.0779],  // 하계역
+      [37.6312, 127.0796],  // 공릉(서울과기대)역
+      [37.6209, 127.0753],  // 태릉입구역
+      [37.6053, 127.0833],  // 먹골역
+      [37.5984, 127.0813],  // 중화역
+      [37.5949, 127.0783],  // 상봉역
+      [37.5894, 127.0782],  // 면목역
+      [37.5828, 127.0819],  // 사가정역
+      [37.5765, 127.0833],  // 용마산역
+      [37.5739, 127.0766],  // 중곡역
+      [37.5488, 127.0753],  // 군자역
+    ];
+
+    // ── 직장인 노선: 4호선 노원→혜화 (보라 실선) ──
+    const WORKER_SUBWAY_PATH = [
+      [37.6559, 127.0642],  // 노원역
+      [37.6527, 127.0474],  // 창동역
+      [37.6490, 127.0356],  // 쌍문역
+      [37.6378, 127.0248],  // 수유역
+      [37.6283, 127.0304],  // 미아역
+      [37.6218, 127.0299],  // 미아사거리역
+      [37.6097, 127.0218],  // 길음역
+      [37.5924, 127.0164],  // 성신여대입구역
+      [37.5888, 127.0107],  // 한성대입구역
+      [37.5822, 127.0020],  // 혜화역
+    ];
+
+    // ── 직장인 버스 구간: 혜화→종로3가 (주황 점선) ──
+    const WORKER_BUS_PATH = [
+      [37.5822, 127.0020],  // 혜화역 3번 출구
+      [37.5800, 126.9983],
+      [37.5777, 126.9950],
+      [37.5749, 126.9934],
+      [37.5713, 126.9920],  // 종로3가역
+    ];
+
+    // ── 기타(프리랜서): 2호선 을지로4가→을지로3가 + 3호선 을지로3가→종로3가 (파란 실선) ──
+    const FREELANCE_PATH = [
+      [37.5663, 126.9994],  // 을지로4가 (2호선)
+      [37.5665, 126.9920],  // 을지로3가 (2·3호선 환승)
+      [37.5713, 126.9920],  // 종로3가 (3호선)
+    ];
+
+    // ── 사용자 유형별 노선 설정 ──
+    const ROUTE_CONFIG = {
+      '대학생': [
+        { path: STUDENT_PATH1, color: '#7c3aed', style: 'solid', weight: 8, label: '등하교', busPath: null, desc: '4호선 노원 ↔ 충무로' },
+        { path: STUDENT_PATH2, color: '#f97316', style: 'solid', weight: 8, label: '알바', busPath: null, desc: '7호선 노원 ↔ 군자' },
+      ],
+      '직장인': [
+        { path: WORKER_SUBWAY_PATH, color: '#7c3aed', style: 'solid', weight: 8, label: '출퇴근', busPath: WORKER_BUS_PATH, desc: '4호선 노원 ↔ 혜화 + 버스' },
+      ],
+      '기타': [
+        { path: FREELANCE_PATH, color: '#2563eb', style: 'solid', weight: 8, label: '자주가는 노선', busPath: null, desc: '2·3호선 을지로4가 ↔ 종로3가' },
+      ],
+    };
+
+    // ── 동적 노선 폴리라인 저장 ──
+    let routePolylines = [];   // [[kakao.Polyline, ...], ...]
+    let routeOnStates = [];    // [true/false, ...]
+
+    // ── 노선명 등록 화면 초기화 ──
+    function openRouteNaming() {
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const total = config.length;
+      rnStep = 0;
+      routeNames = new Array(total).fill('');
+
+      const stepRow = document.getElementById('rn-step-row');
+      if (stepRow) {
+        stepRow.style.display = total > 1 ? 'flex' : 'none';
+        stepRow.innerHTML = config.map((_, i) =>
+          `<div class="rn-step-dot ${i === 0 ? 'active' : ''}"></div>`
+        ).join('');
+      }
+      const curEl = document.getElementById('rn-cur');
+      const totEl = document.getElementById('rn-tot');
+      const badgeEl = document.getElementById('rn-badge');
+      const inputEl = document.getElementById('rn-input');
+      const btnEl = document.getElementById('rn-btn');
+      if (curEl) curEl.textContent = '1';
+      if (totEl) totEl.textContent = String(total);
+      if (badgeEl) badgeEl.textContent = config[0].label + ' 노선';
+      if (inputEl) inputEl.value = '';
+      if (btnEl) {
+        btnEl.textContent = total > 1 ? '다음 노선 보기 →' : '내 지도 보기';
+        btnEl.classList.remove('active');
+      }
+      initNamingMap(0);
+    }
+
+    function initNamingMap(step) {
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const route = config[step];
+      const container = document.getElementById('kakao-map-naming');
+      if (!container) return;
+      if (typeof kakao === 'undefined' || !kakao.maps) {
+        container.style.background = 'linear-gradient(160deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)';
+        return;
+      }
+      try {
+        const midPt = route.path[Math.floor(route.path.length / 2)];
+        if (!namingMap) {
+          namingMap = new kakao.maps.Map(container, {
+            center: new kakao.maps.LatLng(midPt[0], midPt[1]), level: 7
+          });
+        } else {
+          namingMap.setCenter(new kakao.maps.LatLng(midPt[0], midPt[1]));
+          namingMap.setLevel(7);
+        }
+        namingPolys.forEach(p => p.setMap(null));
+        namingPolys = [];
+        const poly = new kakao.maps.Polyline({
+          path: route.path.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+          strokeWeight: 8, strokeColor: route.color, strokeOpacity: 0.95, strokeStyle: 'solid'
+        });
+        poly.setMap(namingMap);
+        namingPolys.push(poly);
+        if (route.busPath) {
+          const busPoly = new kakao.maps.Polyline({
+            path: route.busPath.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+            strokeWeight: 6, strokeColor: '#f97316', strokeOpacity: 0.9, strokeStyle: 'shortdot'
+          });
+          busPoly.setMap(namingMap);
+          namingPolys.push(busPoly);
+        }
+      } catch(e) {
+        container.style.background = 'linear-gradient(160deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)';
+        console.warn('namingMap init failed:', e);
+      }
+    }
+
+    function onRnInput() {
+      const val = document.getElementById('rn-input').value.trim();
+      const btn = document.getElementById('rn-btn');
+      if (btn) btn.classList.toggle('active', val.length > 0);
+    }
+
+    function rnNext() {
+      const val = document.getElementById('rn-input').value.trim();
+      if (!val) return;
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const total = config.length;
+      routeNames[rnStep] = val;
+      if (rnStep < total - 1) {
+        rnStep++;
+        const dots = document.querySelectorAll('.rn-step-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === rnStep));
+        const curEl = document.getElementById('rn-cur');
+        const badgeEl = document.getElementById('rn-badge');
+        const inputEl = document.getElementById('rn-input');
+        const btnEl = document.getElementById('rn-btn');
+        if (curEl) curEl.textContent = String(rnStep + 1);
+        if (badgeEl) badgeEl.textContent = config[rnStep].label + ' 노선';
+        if (inputEl) inputEl.value = '';
+        if (btnEl) {
+          btnEl.classList.remove('active');
+          btnEl.textContent = rnStep === total - 1 ? '내 지도 보기' : '다음 노선 보기 →';
+        }
+        initNamingMap(rnStep);
+      } else {
+        goTo('s-map');
+        mapInit();
+      }
+    }
+
+    function renderRoutePanel() {
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const panel = document.getElementById('route-panel');
+      if (!panel) return;
+      if (config.length <= 1) { panel.innerHTML = ''; return; }
+      panel.innerHTML = config.map((r, i) =>
+        `<button class="route-btn commute-on" id="rb-${i}" onclick="toggleRoute(${i})"
+          style="background:${r.color};color:#fff;">
+          <span class="route-dot" style="background:rgba(255,255,255,0.8)"></span>
+          ${routeNames[i] || r.label}
+        </button>`
+      ).join('');
+    }
+
+    function toggleRoute(i) {
+      const onCount = routeOnStates.filter(v => v).length;
+      if (routeOnStates[i] && onCount <= 1) return;
+      routeOnStates[i] = !routeOnStates[i];
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      if (routePolylines[i]) {
+        routePolylines[i].forEach(p => p.setMap(routeOnStates[i] ? kakaoMap : null));
+      }
+      const btn = document.getElementById('rb-' + i);
+      if (btn) {
+        if (routeOnStates[i]) {
+          btn.style.background = config[i].color;
+          btn.style.color = '#fff';
+        } else {
+          btn.style.background = 'rgba(255,255,255,0.92)';
+          btn.style.color = '#9ca3af';
+        }
+      }
+    }
+
+    function buildMapInfoPanel() {
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const routesEl = document.getElementById('map-info-routes');
+      if (routesEl) {
+        routesEl.innerHTML = config.map((r, i) =>
+          `<div class="map-info-route">
+            <div class="map-info-dot" style="background:${r.color}"></div>
+            <div>
+              <div class="map-info-name">${routeNames[i] || r.label}</div>
+              <div class="map-info-desc">${r.desc}</div>
+            </div>
+          </div>`
+        ).join('');
+      }
+      const today = new Date();
+      const past = new Date(today);
+      past.setDate(past.getDate() - 30);
+      const fmt = d => `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+      const periodEl = document.getElementById('map-info-period');
+      if (periodEl) periodEl.textContent = `${fmt(past)} ~ ${fmt(today)}`;
+    }
+
     // ── 노선 거리 기반 색상 ──
     function haverDist(lat1, lng1, lat2, lng2) {
       const R = 6371000;
@@ -3100,12 +3438,10 @@
       </div>`;
     }
 
-    // ── mapInit (Kakao 버전) ──
+    // ── mapInit (사용자 유형별 동적 노선) ──
     function mapInit() {
       const container = document.getElementById('kakao-map');
       if (!container) return;
-
-      // 카카오 SDK 로드 확인
       if (typeof kakao === 'undefined' || !kakao.maps) {
         container.style.background = '#1e1e2e';
         container.style.display = 'flex';
@@ -3113,40 +3449,54 @@
         container.style.justifyContent = 'center';
         container.innerHTML = '<div style="color:#a78bfa;text-align:center;padding:24px;font-size:14px;font-weight:700">' +
           '📍 카카오 지도 초기화 실패<br><span style="font-size:12px;color:#9ca3af;font-weight:400;margin-top:8px;display:block">' +
-          '카카오 콘솔 → 앱 설정 → 플랫폼 → Web에<br><b style="color:#a78bfa">http://localhost:3000</b> 도메인을 등록해주세요</span></div>';
+          '카카오 콘솔 → 앱 설정 → 플랫폼 → Web에<br><b style="color:#a78bfa">http://localhost:52861</b> 도메인을 등록해주세요</span></div>';
         return;
       }
 
-      // 지도 생성
-      const center = new kakao.maps.LatLng(37.5900, 127.0100);
-      const options = { center, level: 6 };
-      kakaoMap = new kakao.maps.Map(container, options);
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
 
-      // 지도 UI 컨트롤 비활성화 (직접 버튼 사용)
-      // kakaoMap.setZoomable(true);
+      // 지도 중심 계산
+      const allPts = config.flatMap(r => [...r.path, ...(r.busPath || [])]);
+      const avgLat = allPts.reduce((s, p) => s + p[0], 0) / allPts.length;
+      const avgLng = allPts.reduce((s, p) => s + p[1], 0) / allPts.length;
 
-      // ── 출퇴근 노선 (4호선 보라, 실선) ──
-      commutePolyline = new kakao.maps.Polyline({
-        path: COMMUTE_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 8, strokeColor: '#7c3aed', strokeOpacity: 0.92, strokeStyle: 'solid'
+      if (kakaoMap) {
+        kakaoMap.setCenter(new kakao.maps.LatLng(avgLat, avgLng));
+        kakaoMap.setLevel(7);
+      } else {
+        kakaoMap = new kakao.maps.Map(container, {
+          center: new kakao.maps.LatLng(avgLat, avgLng), level: 7
+        });
+      }
+
+      // 기존 폴리라인 제거
+      routePolylines.forEach(group => group.forEach(p => p.setMap(null)));
+      routePolylines = [];
+      routeOnStates = [];
+
+      // 사용자 유형별 노선 그리기
+      config.forEach((r, i) => {
+        const polys = [];
+        const mainPoly = new kakao.maps.Polyline({
+          path: r.path.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+          strokeWeight: r.weight, strokeColor: r.color, strokeOpacity: 0.92, strokeStyle: r.style
+        });
+        mainPoly.setMap(kakaoMap);
+        polys.push(mainPoly);
+        if (r.busPath) {
+          const busPoly = new kakao.maps.Polyline({
+            path: r.busPath.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+            strokeWeight: 6, strokeColor: '#f97316', strokeOpacity: 0.88, strokeStyle: 'shortdot'
+          });
+          busPoly.setMap(kakaoMap);
+          polys.push(busPoly);
+        }
+        routePolylines.push(polys);
+        routeOnStates.push(true);
       });
-      commutePolyline.setMap(kakaoMap);
 
-      // ── 퇴근 노선 (버스/도로 주황, 점선) ──
-      commuteReturnPoly = new kakao.maps.Polyline({
-        path: RETURN_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 6, strokeColor: '#f97316', strokeOpacity: 0.88, strokeStyle: 'shortdot'
-      });
-      commuteReturnPoly.setMap(kakaoMap);
-
-      // ── 주말 노선 (4호선+5호선 환승, 청록, 실선) ──
-      weekendPolyline = new kakao.maps.Polyline({
-        path: WEEKEND_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
-        strokeWeight: 7, strokeColor: '#059669', strokeOpacity: 0.92, strokeStyle: 'solid'
-      });
-      weekendPolyline.setMap(kakaoMap);
-
-      // ── 장소 핀 CustomOverlay ──
+      // ── 장소 핀 ──
       placeOverlays.forEach(o => o.setMap(null));
       placeOverlays = [];
       PLACES.forEach((p, idx) => {
@@ -3154,9 +3504,7 @@
         const overlay = new kakao.maps.CustomOverlay({
           position: new kakao.maps.LatLng(coord.lat, coord.lng),
           content: makePinHTML(idx),
-          xAnchor: 0.5,
-          yAnchor: 1.0,
-          zIndex: 3
+          xAnchor: 0.5, yAnchor: 1.0, zIndex: 3
         });
         overlay.setMap(kakaoMap);
         placeOverlays.push(overlay);
@@ -3169,26 +3517,19 @@
         const overlay = new kakao.maps.CustomOverlay({
           position: new kakao.maps.LatLng(wp.lat, wp.lng),
           content: makeWaypointHTML(wp),
-          xAnchor: 0.5,
-          yAnchor: 1.0,
-          zIndex: 5
+          xAnchor: 0.5, yAnchor: 1.0, zIndex: 5
         });
         overlay.setMap(kakaoMap);
         waypointOverlays.push(overlay);
       });
 
-      // 지도 빈 곳 클릭 → 시트/팝업 닫기
       kakao.maps.event.addListener(kakaoMap, 'click', () => {
         closeWpPopup();
         if (sheetOpen) closeSheet();
       });
 
-      // 필터/버튼 초기화
-      commuteOn = true; weekendOn = true;
-      const cb = document.getElementById('commute-btn');
-      const wb = document.getElementById('weekend-btn');
-      if (cb) cb.className = 'route-btn commute-on';
-      if (wb) wb.className = 'route-btn weekend-on';
+      renderRoutePanel();
+      buildMapInfoPanel();
 
       const allChip = document.querySelector('.cat-chip[data-filter="all"]');
       if (allChip) setCat(allChip);
@@ -3202,22 +3543,16 @@
     function mapZoomOut() { if (kakaoMap) kakaoMap.setLevel(kakaoMap.getLevel() + 1); }
     function mapReset() {
       if (!kakaoMap) return;
-      kakaoMap.setCenter(new kakao.maps.LatLng(37.5900, 127.0100));
-      kakaoMap.setLevel(6);
+      const type = selectedUserType || '직장인';
+      const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+      const allPts = config.flatMap(r => [...r.path, ...(r.busPath || [])]);
+      const avgLat = allPts.reduce((s, p) => s + p[0], 0) / allPts.length;
+      const avgLng = allPts.reduce((s, p) => s + p[1], 0) / allPts.length;
+      kakaoMap.setCenter(new kakao.maps.LatLng(avgLat, avgLng));
+      kakaoMap.setLevel(7);
     }
 
-    // ── 노선 토글 ──
-    function toggleCommuteRoute() {
-      commuteOn = !commuteOn;
-      if (commutePolyline)   commutePolyline.setMap(commuteOn ? kakaoMap : null);
-      if (commuteReturnPoly) commuteReturnPoly.setMap(commuteOn ? kakaoMap : null);
-      document.getElementById('commute-btn').className = 'route-btn ' + (commuteOn ? 'commute-on' : 'commute-off');
-    }
-    function toggleWeekendRoute() {
-      weekendOn = !weekendOn;
-      if (weekendPolyline) weekendPolyline.setMap(weekendOn ? kakaoMap : null);
-      document.getElementById('weekend-btn').className = 'route-btn ' + (weekendOn ? 'weekend-on' : 'weekend-off');
-    }
+    // ── 줌 리셋 보정 (사용자 유형별 중심) ──
 
     // ── 필터 ──
     function setCat(el) {
