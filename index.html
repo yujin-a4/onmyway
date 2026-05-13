@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>티머니GO — 가는김에</title>
+  <!-- 카카오 지도 SDK: YOUR_KAKAO_JS_KEY 자리에 실제 키 입력 -->
+  <script type="text/javascript"
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6918027a77ec33b6f230b8054ba1e562&libraries=services"></script>
+  <style>
+    /* ── Reset & Base ── */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', BlinkMacSystemFont, sans-serif;
+      background: #d1d5db;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Phone Shell ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #fff;
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+      box-shadow:
+        0 0 0 10px #111,
+        0 0 0 12px #333,
+        0 40px 100px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ── Screen Layer ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ── Scrollable content wrapper ── */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scroll-body::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ════════════════════════════════════
+   STATUS BAR
+════════════════════════════════════ */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px 4px;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: #fff;
+      z-index: 10;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    /* ════════════════════════════════════
+   APP HEADER
+════════════════════════════════════ */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 16px 12px;
+      flex-shrink: 0;
+      background: #fff;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qr-icon {
+      width: 36px;
+      height: 36px;
+      border: 2px solid #7c3aed;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      color: #7c3aed;
+      font-weight: 900;
+    }
+
+    .quick-pill {
+      background: #f3f0ff;
+      border-radius: 20px;
+      padding: 7px 13px;
+      font-size: 13px;
+      color: #6d28d9;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+
+    .header-icons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hicon {
+      width: 38px;
+      height: 38px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      cursor: pointer;
+    }
+
+    .hicon-badge {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      border-radius: 10px;
+      padding: 1px 4px;
+      line-height: 1.4;
+      border: 1.5px solid #fff;
+    }
+
+    /* ════════════════════════════════════
+   NOTICE BAR
+════════════════════════════════════ */
+    .notice-bar {
+      margin: 0 16px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: #4b5563;
+      flex-shrink: 0;
+    }
+
+    .notice-tag {
+      background: #7c3aed;
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .notice-more {
+      margin-left: auto;
+      color: #9ca3af;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    /* ════════════════════════════════════
+   BANNER
+════════════════════════════════════ */
+    .banner {
+      margin: 0 16px 16px;
+      background: linear-gradient(135deg, #fce7f3 0%, #ede9fe 100%);
+      border-radius: 18px;
+      padding: 22px 18px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .banner h2 {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.4;
+      color: #111;
+    }
+
+    .banner-cta {
+      margin-top: 14px;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .banner-illust {
+      position: absolute;
+      right: 14px;
+      top: 8px;
+      font-size: 64px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* ════════════════════════════════════
+   TAB BAR
+════════════════════════════════════ */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      background: #fff;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 13px 0;
+      font-size: 15px;
+      font-weight: 500;
+      color: #9ca3af;
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+
+    .tab.on {
+      color: #111;
+      font-weight: 800;
+      border-bottom-color: #111;
+    }
+
+    .tab-travel.on {
+      border-bottom-color: #7c3aed;
+      color: #7c3aed;
+    }
+
+    /* ════════════════════════════════════
+   MENU GRID
+════════════════════════════════════ */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 16px 6px 6px;
+    }
+
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 2px 10px;
+      cursor: pointer;
+      position: relative;
+      transition: opacity .15s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .menu-item:active {
+      opacity: 0.55;
+    }
+
+    .menu-icon-wrap {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: #f5f3ff;
+      position: relative;
+    }
+
+    .menu-icon-wrap.blue {
+      background: #eff6ff;
+    }
+
+    .menu-icon-wrap.green {
+      background: #f0fdf4;
+    }
+
+    .menu-icon-wrap.orange {
+      background: #fff7ed;
+    }
+
+    .menu-icon-wrap.purple {
+      background: #f5f3ff;
+    }
+
+    .menu-icon-wrap.pink {
+      background: #fdf2f8;
+    }
+
+    .menu-name {
+      font-size: 11px;
+      color: #374151;
+      text-align: center;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+
+    .menu-name.accent {
+      color: #7c3aed;
+      font-weight: 700;
+    }
+
+    /* 뱃지들 */
+    .badge-n {
+      position: absolute;
+      top: -5px;
+      right: -6px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 9px;
+      line-height: 1.5;
+      border: 1.5px solid #fff;
+    }
+
+    .badge-go {
+      position: absolute;
+      top: -5px;
+      right: -6px;
+      background: #f59e0b;
+      color: #fff;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 8px;
+      line-height: 1.5;
+      border: 1.5px solid #fff;
+    }
+
+    .badge-new {
+      position: absolute;
+      top: -5px;
+      right: -8px;
+      background: #fff;
+      border: 1.5px solid #7c3aed;
+      color: #7c3aed;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 8px;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    /* ════════════════════════════════════
+   SECTION / PRODUCT
+════════════════════════════════════ */
+    .section {
+      padding: 8px 16px 20px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      color: #111;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .product-card {
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid #f3f4f6;
+    }
+
+    .product-thumb {
+      height: 104px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+    }
+
+    .product-info {
+      padding: 9px 10px 10px;
+      background: #fafafa;
+    }
+
+    .product-label {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    .product-price {
+      font-size: 15px;
+      font-weight: 900;
+      color: #7c3aed;
+      margin-top: 3px;
+    }
+
+    /* ════════════════════════════════════
+   BOTTOM NAV
+════════════════════════════════════ */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 22px;
+      border-top: 1px solid #e5e7eb;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      min-width: 58px;
+    }
+
+    .nav-item .ni {
+      font-size: 23px;
+    }
+
+    .nav-item span {
+      font-size: 10px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .nav-item.on span {
+      color: #7c3aed;
+      font-weight: 700;
+    }
+
+    .nav-home {
+      width: 52px;
+      height: 52px;
+      background: #7c3aed;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-top: -16px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(124, 58, 237, .45);
+    }
+
+    /* ════════════════════════════════════
+   CONSENT SCREEN
+════════════════════════════════════ */
+    #s-consent {
+      background: rgba(0, 0, 0, 0);
+      transition: background .3s;
+    }
+
+    #s-consent.active {
+      justify-content: flex-end;
+    }
+
+    .consent-sheet {
+      background: #fff;
+      border-radius: 26px 26px 0 0;
+      padding: 0 20px 40px;
+      max-height: 92%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      transform: translateY(100%);
+      transition: transform .38s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .consent-sheet::-webkit-scrollbar {
+      display: none;
+    }
+
+    .drag-handle {
+      width: 40px;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin: 14px auto 22px;
+    }
+
+    .consent-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .consent-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .consent-sub {
+      font-size: 13.5px;
+      color: #6b7280;
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+
+    .consent-item {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 15px 16px;
+      margin-bottom: 10px;
+    }
+
+    .consent-item.required {
+      border-color: #7c3aed;
+      background: #faf8ff;
+    }
+
+    .consent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .consent-label-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .consent-label {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .tag-req {
+      background: #7c3aed;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .tag-opt {
+      background: #f3f4f6;
+      color: #9ca3af;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .consent-desc {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 7px;
+      line-height: 1.55;
+    }
+
+    /* Toggle switch */
+    .sw {
+      position: relative;
+      width: 46px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .sw input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .sw-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      background: #d1d5db;
+      transition: background .2s;
+    }
+
+    .sw input:checked+.sw-track {
+      background: #7c3aed;
+    }
+
+    .sw-track::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      transition: transform .2s;
+    }
+
+    .sw input:checked+.sw-track::after {
+      transform: translateX(18px);
+    }
+
+    .consent-btn {
+      width: 100%;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 17px;
+      font-size: 16px;
+      font-weight: 800;
+      margin-top: 22px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+
+    .consent-btn:active {
+      opacity: .8;
+    }
+
+    .consent-cancel {
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 14px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* ════════════════════════════════════
+   LOADING SCREEN
+════════════════════════════════════ */
+    #screen-loading {
+      background: #0c1120;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-wrap {
+      text-align: center;
+      color: #fff;
+      padding: 0 32px;
+    }
+
+    .loading-map-preview {
+      width: 240px;
+      height: 240px;
+      background: #162035;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      margin: 0 auto 30px;
+    }
+
+    .lmap-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .lroute {
+      stroke: #a78bfa;
+      stroke-width: 3;
+      fill: none;
+      stroke-dasharray: 320;
+      stroke-dashoffset: 320;
+      stroke-linecap: round;
+    }
+
+    .lroute.anim {
+      animation: drawL 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes drawL {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .lpin {
+      opacity: 0;
+      transition: opacity .4s;
+    }
+
+    .lpin.show {
+      opacity: 1;
+    }
+
+    .loading-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .loading-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.55);
+      line-height: 1.7;
+    }
+
+    .lbar-wrap {
+      width: 180px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      margin: 22px auto 0;
+      overflow: hidden;
+    }
+
+    .lbar {
+      height: 100%;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      border-radius: 2px;
+      width: 0%;
+      transition: width .1s linear;
+    }
+
+    /* ════════════════════════════════════
+   MAP SCREEN
+════════════════════════════════════ */
+    #screen-map {
+      overflow: hidden;
+    }
+
+    .map-topbar {
+      background: #fff;
+      z-index: 50;
+      flex-shrink: 0;
+      border-bottom: 1px solid #f3f4f6;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .map-topbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px 8px;
+    }
+
+    .map-back {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: none;
+    }
+
+    .map-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #111;
+      margin-left: 2px;
+    }
+
+    .route-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .route-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .route-btn.commute-on {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
+    .route-btn.commute-off {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    .route-btn.weekend-on {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .route-btn.weekend-off {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    .route-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      transition: background .2s;
+    }
+
+    .route-btn.commute-on .route-dot {
+      background: #7c3aed;
+    }
+
+    .route-btn.commute-off .route-dot {
+      background: #d1d5db;
+    }
+
+    .route-btn.weekend-on .route-dot {
+      background: #059669;
+    }
+
+    .route-btn.weekend-off .route-dot {
+      background: #d1d5db;
+    }
+
+    /* Category filter */
+    .cat-scroll {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .cat-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-chip {
+      white-space: nowrap;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 7px 15px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #fff;
+      color: #6b7280;
+      flex-shrink: 0;
+      transition: all .18s;
+    }
+
+    .cat-chip.on {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Map viewport */
+    .map-vp {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      background: #c8d8e8;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .map-vp.dragging {
+      cursor: grabbing;
+    }
+
+    /* Map world (transformed) */
+    .map-world {
+      position: absolute;
+      width: 900px;
+      height: 900px;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    .map-insight {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 38;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(209, 213, 219, 0.9);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+      pointer-events: none;
+    }
+
+    .map-insight strong {
+      display: block;
+      font-size: 12px;
+      color: #111827;
+      margin-bottom: 3px;
+    }
+
+    .map-insight span {
+      display: block;
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+
+    .map-legend {
+      position: absolute;
+      left: 12px;
+      bottom: 64px;
+      z-index: 38;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      padding: 7px 10px;
+      box-shadow: 0 3px 14px rgba(15, 23, 42, 0.12);
+      pointer-events: none;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      color: #4b5563;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .legend-dot.hot {
+      background: #ef4444;
+    }
+
+    .legend-dot.route {
+      background: #7c3aed;
+    }
+
+    .legend-dot.visit {
+      background: #2563eb;
+    }
+
+    /* Pins */
+    .map-pin {
+      position: absolute;
+      transform: translate(-50%, -100%) scale(var(--pin-scale, 1));
+      transform-origin: 50% 100%;
+      cursor: pointer;
+      z-index: 15;
+      transition: filter .15s;
+    }
+
+    .map-pin:active {
+      filter: brightness(0.85);
+    }
+
+    .pin-bubble {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pin-label {
+      background: #fff;
+      border-radius: 9px;
+      padding: 3px 9px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #1f2937;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .pin-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 3px solid #fff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .disc-pin {
+      position: absolute;
+      transform: translate(-50%, -100%) scale(var(--pin-scale, 1));
+      transform-origin: 50% 100%;
+      cursor: pointer;
+      z-index: 14;
+      transition: opacity .18s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding-bottom: 10px;
+    }
+
+    .disc-pin.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -100%) scale(calc(var(--pin-scale, 1) * 0.7));
+    }
+
+    .disc-bubble {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      border: 2.5px solid #e5e7eb;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+      position: relative;
+    }
+
+    .disc-bubble.benefit {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .disc-bubble.hot {
+      border-color: #ef4444;
+      background: #fff1f2;
+    }
+
+    .disc-bubble.food-pin {
+      border-color: #f97316;
+      background: #fff7ed;
+    }
+
+    .disc-bubble.food-pin.hot {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .disc-bubble.culture-pin {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .disc-bubble.fun-pin {
+      border-color: #059669;
+      background: #ecfdf5;
+    }
+
+    .disc-bubble.selected {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), 0 4px 14px rgba(124, 58, 237, 0.4);
+      transform: scale(1.25);
+    }
+
+    /* 장소 핀 — 아래 뾰족 꼬리 */
+    .disc-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      margin-top: -1px;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 9px solid #fff;
+    }
+
+    .disc-bubble.food-pin::after {
+      border-top-color: #fff7ed;
+    }
+
+    .disc-bubble.food-pin.hot::after {
+      border-top-color: #fef2f2;
+    }
+
+    .disc-bubble.culture-pin::after {
+      border-top-color: #eff6ff;
+    }
+
+    .disc-bubble.fun-pin::after {
+      border-top-color: #ecfdf5;
+    }
+
+    .disc-bubble.benefit::after {
+      border-top-color: #fffbeb;
+    }
+
+    .disc-bubble.hot::after {
+      border-top-color: #fff1f2;
+    }
+
+    /* 거점 핀 편집 커서 */
+    .waypoint-pin {
+      cursor: pointer;
+    }
+
+    .waypoint-pin:hover .pin-label {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
+    /* 거점 편집 팝업 */
+    .waypoint-edit-popup {
+      position: absolute;
+      z-index: 200;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+      min-width: 200px;
+      animation: popIn .22s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    .waypoint-edit-popup h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    .waypoint-edit-popup input {
+      width: 100%;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      outline: none;
+      transition: border-color .15s;
+      font-family: inherit;
+    }
+
+    .waypoint-edit-popup input:focus {
+      border-color: #7c3aed;
+    }
+
+    .waypoint-edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .wp-btn-cancel {
+      flex: 1;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f9fafb;
+      color: #6b7280;
+    }
+
+    .wp-btn-save {
+      flex: 1;
+      border: none;
+      border-radius: 9px;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #7c3aed;
+      color: #fff;
+    }
+
+    .visit-count {
+      position: absolute;
+      right: -6px;
+      top: -6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      border: 2px solid #fff;
+      font-size: 9px;
+      line-height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .pin-caption {
+      max-width: 86px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(229, 231, 235, 0.95);
+      border-radius: 8px;
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #374151;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+    }
+
+    /* Map controls */
+    .map-ctrl {
+      position: absolute;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 40;
+      bottom: 14px;
+    }
+
+    .ctrl-btn {
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 300;
+      color: #374151;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      border: none;
+      line-height: 1;
+      transition: background .12s;
+    }
+
+    .ctrl-btn:active {
+      background: #f3f4f6;
+    }
+
+    .loc-btn {
+      position: absolute;
+      left: 14px;
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      border: none;
+      transition: background .12s;
+      z-index: 40;
+      bottom: 14px;
+    }
+
+    .loc-btn:active {
+      background: #f3f4f6;
+    }
+
+    /* ── Card Shelf ── */
+    .card-shelf {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 35;
+      display: none;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.1);
+      transition: transform .32s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: transform;
+    }
+
+    .card-shelf.pushed {
+      transform: var(--shelf-push, translateY(0));
+    }
+
+    .shelf-handle {
+      width: 38px;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin: 12px auto 6px;
+    }
+
+    .shelf-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9ca3af;
+      padding: 0 16px 9px;
+    }
+
+    .card-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 16px 18px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .card-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .place-card {
+      min-width: 134px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .place-card.sel {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+    }
+
+    .card-thumb {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      position: relative;
+    }
+
+    .card-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: #f59e0b;
+      color: #fff;
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 7px;
+      letter-spacing: 0.2px;
+    }
+
+    .card-body {
+      padding: 8px 10px 10px;
+    }
+
+    .card-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #111;
+    }
+
+    .card-cat {
+      font-size: 10.5px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .card-time {
+      font-size: 11px;
+      color: #7c3aed;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+
+    /* ── Mini Bottom Sheet ── */
+    .mini-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      width: 100%;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      box-shadow: 0 -6px 32px rgba(0, 0, 0, 0.16);
+      transform: translate3d(0, 100%, 0);
+      transition: transform .32s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: transform;
+      contain: layout paint;
+    }
+
+    .mini-sheet.open {
+      transform: translate3d(0, 0, 0);
+    }
+
+    .ms-handle {
+      width: 38px;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin: 12px auto 0;
+    }
+
+    .ms-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 12px 16px 0;
+    }
+
+    .ms-name {
+      font-size: 19px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1.25;
+    }
+
+    .ms-cat {
+      font-size: 12.5px;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+
+    .ms-close {
+      width: 30px;
+      height: 30px;
+      background: #f3f4f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #6b7280;
+      cursor: pointer;
+      border: none;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    /* 평점 + 영업 정보 행 */
+    .ms-info-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .ms-rating-stars {
+      color: #f59e0b;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .ms-rating-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+    }
+
+    .ms-rcount {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .ms-dot {
+      color: #d1d5db;
+      font-size: 11px;
+    }
+
+    .ms-open-tag {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ms-open-tag.open {
+      color: #059669;
+    }
+
+    .ms-open-tag.closed {
+      color: #ef4444;
+    }
+
+    .ms-hours {
+      font-size: 11.5px;
+      color: #9ca3af;
+    }
+
+    /* 이동수단 소요시간 */
+    .ms-transit-wrap {
+      margin: 10px 16px 0;
+      border: 1.5px solid #ede9fe;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .ms-transit-hdr {
+      padding: 7px 14px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #7c3aed;
+      background: #faf8ff;
+      border-bottom: 1px solid #ede9fe;
+    }
+
+    .ms-transit {
+      display: flex;
+    }
+
+    .ms-tcell {
+      flex: 1;
+      padding: 10px 6px;
+      text-align: center;
+      border-right: 1px solid #ede9fe;
+    }
+
+    .ms-tcell:last-child {
+      border-right: none;
+    }
+
+    .tc-icon {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .tc-time {
+      font-size: 14px;
+      font-weight: 900;
+      color: #7c3aed;
+    }
+
+    .tc-label {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .ms-actions {
+      display: flex;
+      gap: 9px;
+      padding: 12px 16px 0;
+    }
+
+    .ms-btn-sub {
+      flex: 1;
+      background: #f5f3ff;
+      color: #7c3aed;
+      border: 1.5px solid #c4b5fd;
+      border-radius: 13px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .ms-btn-main {
+      flex: 1;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 13px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .ms-btn-sub:active {
+      background: #ede9fe;
+    }
+
+    .ms-btn-main:active {
+      background: #6d28d9;
+    }
+
+    .ms-more {
+      text-align: center;
+      font-size: 12.5px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 10px 0 14px;
+      letter-spacing: 0.1px;
+    }
+
+    .ms-more:active {
+      color: #7c3aed;
+    }
+
+    /* ── Push notification ── */
+    .push-banner {
+      position: absolute;
+      top: -96px;
+      left: 12px;
+      right: 12px;
+      z-index: 200;
+      background: rgba(28, 28, 30, 0.95);
+      color: #fff;
+      border-radius: 16px;
+      padding: 13px 15px;
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      transition: top .42s cubic-bezier(0.34, 1.4, 0.64, 1);
+      cursor: pointer;
+    }
+
+    .push-banner.show {
+      top: 8px;
+    }
+
+    .push-icon {
+      width: 38px;
+      height: 38px;
+      background: #7c3aed;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+
+    .push-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .push-body {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.45;
+    }
+
+    /* ════════════════════════════════════
+   CHECKIN SCREEN
+════════════════════════════════════ */
+    #screen-checkin {
+      background: rgba(0, 0, 0, 0.55);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .checkin-card {
+      background: #fff;
+      border-radius: 26px;
+      padding: 34px 26px 30px;
+      width: 330px;
+      text-align: center;
+      animation: popIn .35s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.88);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .ck-emoji {
+      font-size: 64px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .ck-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 8px;
+    }
+
+    .ck-desc {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .ck-mileage {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f5f3ff;
+      color: #7c3aed;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 10px 28px;
+      border-radius: 50px;
+      margin-bottom: 22px;
+    }
+
+    .ck-rate-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+
+    .star-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .star {
+      font-size: 34px;
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: color .12s, transform .12s;
+    }
+
+    .star:active {
+      transform: scale(0.88);
+    }
+
+    .star.on {
+      color: #f59e0b;
+    }
+
+    .ck-confirm {
+      width: 100%;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 15px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .ck-confirm:active {
+      background: #6d28d9;
+    }
+
+    .ck-skip {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 13px;
+      cursor: pointer;
+    }
+
+    /* ════════════════════════════════════
+   TOAST
+════════════════════════════════════ */
+    .toast {
+      position: absolute;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: rgba(28, 28, 30, 0.92);
+      color: #fff;
+      border-radius: 50px;
+      padding: 11px 22px;
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 300;
+      opacity: 0;
+      transition: opacity .22s, transform .22s;
+      pointer-events: none;
+      letter-spacing: -0.2px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ════════════════════════════════════
+   UTILITIES
+════════════════════════════════════ */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes locPulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.7;
+      }
+
+      70% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone">
+
+    <!-- ════════════════════════════════════
+     S1 · 교통 홈
+════════════════════════════════════ -->
+    <div id="s-home" class="screen active">
+      <div class="status-bar">
+        <span id="clock-home">8:56</span>
+        <div class="status-right">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="#111">
+            <rect x="0" y="3" width="3" height="9" rx="1" />
+            <rect x="4" y="2" width="3" height="10" rx="1" />
+            <rect x="8" y="0" width="3" height="12" rx="1" />
+            <rect x="12" y="0" width="3" height="12" rx="1" opacity=".3" />
+          </svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#111">
+            <rect x="0" y="2" width="20" height="9" rx="2" fill="none" stroke="#111" stroke-width="1.3" />
+            <rect x="1.5" y="3.5" width="14" height="6" rx="1" />
+            <rect x="21" y="4" width="3" height="5" rx="1" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-header">
+        <div class="header-left">
+          <div class="qr-icon">▣</div>
+          <div class="quick-pill">🛵 빠른 대여 &nbsp;✕</div>
+        </div>
+        <div class="header-icons">
+          <div class="hicon">🅜<span class="hicon-badge">3</span></div>
+          <div class="hicon">🎫<span class="hicon-badge">!</span></div>
+          <div class="hicon">🔔</div>
+        </div>
+      </div>
+
+      <div class="scroll-body">
+        <div class="notice-bar">
+          <span class="notice-tag">공지</span>
+          <span>ARS/챗봇 서비스 점검 안내 (5/24)</span>
+          <span class="notice-more">전체 ›</span>
+        </div>
+        <div class="banner">
+          <h2>따뜻한 봄날<br>걷고 타고 당첨금 받기</h2>
+          <button class="banner-cta">백만원 뽑기 도전 ›</button>
+          <div class="banner-illust">🐇</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab on">교통</div>
+          <div class="tab" onclick="goTo('s-travel')">여행/생활</div>
+          <div class="tab">우리지역</div>
+        </div>
+
+        <div class="menu-grid">
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🚌</div>
+            <div class="menu-name">고속·시외</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">✈️</div>
+            <div class="menu-name">공항버스</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap orange" style="position:relative">
+              🚕<span class="badge-new">신규2천원</span>
+            </div>
+            <div class="menu-name">택시</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap green">🛴</div>
+            <div class="menu-name">자전거·킥보드</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap green" style="position:relative">
+              🚲<span class="badge-go">GO패스</span>
+            </div>
+            <div class="menu-name">공공자전거</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">Ⓜ️</div>
+            <div class="menu-name">무료마일리지</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🚇</div>
+            <div class="menu-name">대중교통</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap orange">🚐</div>
+            <div class="menu-name">콜버스</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🛫</div>
+            <div class="menu-name">항공</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🚢</div>
+            <div class="menu-name">고속페리</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap orange">🚗</div>
+            <div class="menu-name">렌터카</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🚄</div>
+            <div class="menu-name">SRT</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap purple">🎫</div>
+            <div class="menu-name">티머니K패스</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">♿</div>
+            <div class="menu-name">교통약자</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap green" style="position:relative">
+              ⛰️<span class="badge-n">N</span>
+            </div>
+            <div class="menu-name">등산셔틀</div>
+          </div>
+        </div>
+
+        <div
+          style="margin:4px 16px 20px;background:linear-gradient(105deg,#1e3a5f,#2563eb);border-radius:18px;padding:20px 18px;color:#fff;cursor:pointer">
+          <div style="font-size:11px;opacity:.7;margin-bottom:5px">여행가는 달을 검색해보세요!</div>
+          <div style="font-size:18px;font-weight:900;line-height:1.4">여행가는 달<br><span style="color:#a5b4fc">다양한 여행 할인
+              혜택</span></div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <div class="ni">🗺️</div><span>길찾기</span>
+        </div>
+        <div class="nav-item">
+          <div class="ni">👤</div><span>마이</span>
+        </div>
+        <div class="nav-home">🏠</div>
+        <div class="nav-item">
+          <div class="ni">🎁</div><span>혜택</span>
+        </div>
+        <div class="nav-item">
+          <div class="ni">⋯</div><span>전체메뉴</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════
+     S2 · 여행/생활 탭
+════════════════════════════════════ -->
+    <div id="s-travel" class="screen">
+      <div class="status-bar">
+        <span id="clock-travel">8:56</span>
+        <div class="status-right">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="#111">
+            <rect x="0" y="3" width="3" height="9" rx="1" />
+            <rect x="4" y="2" width="3" height="10" rx="1" />
+            <rect x="8" y="0" width="3" height="12" rx="1" />
+            <rect x="12" y="0" width="3" height="12" rx="1" opacity=".3" />
+          </svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="#111">
+            <rect x="0" y="2" width="20" height="9" rx="2" fill="none" stroke="#111" stroke-width="1.3" />
+            <rect x="1.5" y="3.5" width="14" height="6" rx="1" />
+            <rect x="21" y="4" width="3" height="5" rx="1" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-header">
+        <div class="header-left">
+          <div class="qr-icon">▣</div>
+          <div class="quick-pill">🛵 빠른 대여 &nbsp;✕</div>
+        </div>
+        <div class="header-icons">
+          <div class="hicon">🅜<span class="hicon-badge">3</span></div>
+          <div class="hicon">🎫<span class="hicon-badge">!</span></div>
+          <div class="hicon">🔔</div>
+        </div>
+      </div>
+
+      <div class="scroll-body">
+        <div class="notice-bar">
+          <span class="notice-tag">공지</span>
+          <span>환승리워드 서비스 종료 안내</span>
+          <span class="notice-more">전체 ›</span>
+        </div>
+        <div class="banner">
+          <h2>따뜻한 봄날<br>걷고 타고 당첨금 받기</h2>
+          <button class="banner-cta">백만원 뽑기 도전 ›</button>
+          <div class="banner-illust">🐇</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab" onclick="goTo('s-home')">교통</div>
+          <div class="tab tab-travel on">여행/생활</div>
+          <div class="tab">우리지역</div>
+        </div>
+
+        <!--
+      1행: 들르는김에(N) / 등산셔틀(N) / 여행상품 / 숙박 / 퀵·택배
+      2행 좌측: 관광택시
+    -->
+        <div class="menu-grid">
+          <div class="menu-item" onclick="openConsent()">
+            <div class="menu-icon-wrap purple"
+              style="position:relative;padding:0;display:flex;align-items:center;justify-content:center">
+              <svg width="36" height="36" viewBox="0 0 90 80" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="34" width="24" height="17" rx="3.5" fill="#2d2d2d" />
+                <rect x="5" y="37" width="8" height="7" rx="1.5" fill="#b8cdd8" />
+                <rect x="15" y="37" width="8" height="7" rx="1.5" fill="#b8cdd8" />
+                <circle cx="8" cy="52" r="3.5" fill="#111" />
+                <circle cx="8" cy="52" r="1.5" fill="#555" />
+                <circle cx="20" cy="52" r="3.5" fill="#111" />
+                <circle cx="20" cy="52" r="1.5" fill="#555" />
+                <path d="M14 50 Q45 66 76 50" stroke="#c0c0c0" stroke-width="4" fill="none" stroke-linecap="round" />
+                <circle cx="45" cy="17" r="12" fill="#7c3aed" />
+                <circle cx="45" cy="17" r="5" fill="white" />
+                <path d="M38 26 Q45 40 52 26" fill="#7c3aed" />
+                <circle cx="45" cy="44" r="4" fill="#7c3aed" />
+                <line x1="52" y1="44" x2="66" y2="44" stroke="#c0c0c0" stroke-width="2" stroke-dasharray="3 3" />
+                <rect x="65" y="32" width="23" height="18" rx="2.5" fill="#e5e7eb" />
+                <rect x="71" y="37" width="6" height="13" fill="#374151" />
+                <path d="M63 34 Q69.5 26 76 34 Q82.5 26 88 34" fill="#7c3aed" />
+                <rect x="68" y="20" width="10" height="12" rx="2" fill="#7c3aed" />
+                <path d="M73 19 Q77 14 81 19" stroke="#7c3aed" stroke-width="2" fill="none" stroke-linecap="round" />
+              </svg>
+              <span class="badge-n">N</span>
+            </div>
+            <div class="menu-name accent">가는김에</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap green" style="position:relative">
+              ⛰️<span class="badge-n">N</span>
+            </div>
+            <div class="menu-name">등산셔틀</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap pink">🧳</div>
+            <div class="menu-name">여행상품</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap blue">🏨</div>
+            <div class="menu-name">숙박</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap orange">📦</div>
+            <div class="menu-name">퀵·택배</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon-wrap orange">🚖</div>
+            <div class="menu-name">관광택시</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">🕐 이시간 베스트 상품</div>
+          <div class="product-grid">
+            <div class="product-card">
+              <div class="product-thumb" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)">🏔️</div>
+              <div class="product-info">
+                <div class="product-label">[5/23][단독] 지리산종주 산다람쥐</div>
+                <div class="product-price">75,000원</div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-thumb"
+                style="background:#0f0f2e;color:#a78bfa;font-size:13px;font-weight:800;line-height:1.5;padding:12px;text-align:center">
+                아르떼뮤지엄<br><span style="color:#ddd;font-size:11px">강릉</span></div>
+              <div class="product-info">
+                <div class="product-label">티머니GO 특별할인가</div>
+                <div class="product-price">13,000원</div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-thumb" style="background:linear-gradient(135deg,#d1fae5,#6ee7b7)">🐕</div>
+              <div class="product-info">
+                <div class="product-label">강아지숲 d.forest</div>
+                <div class="product-price">18,000원</div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-thumb" style="background:linear-gradient(135deg,#fee2e2,#fca5a5)">🎡</div>
+              <div class="product-info">
+                <div class="product-label">그라운드플래닛 온가족</div>
+                <div class="product-price">25,000원</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <div class="ni">🗺️</div><span>길찾기</span>
+        </div>
+        <div class="nav-item">
+          <div class="ni">👤</div><span>마이</span>
+        </div>
+        <div class="nav-home" onclick="goTo('s-home')">🏠</div>
+        <div class="nav-item">
+          <div class="ni">🎁</div><span>혜택</span>
+        </div>
+        <div class="nav-item">
+          <div class="ni">⋯</div><span>전체메뉴</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════
+     S3 · 데이터 동의 (바텀시트 오버레이)
+════════════════════════════════════ -->
+    <div id="s-consent" class="screen">
+      <div class="consent-sheet" id="consent-sheet">
+        <div class="drag-handle"></div>
+        <div class="consent-icon" style="font-size:0;margin-bottom:12px">
+          <svg width="130" height="72" viewBox="0 0 160 88" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="40" width="32" height="22" rx="4" fill="#2d2d2d" />
+            <rect x="6" y="44" width="11" height="9" rx="2" fill="#b8cdd8" />
+            <rect x="20" y="44" width="11" height="9" rx="2" fill="#b8cdd8" />
+            <circle cx="10" cy="63" r="4.5" fill="#111" />
+            <circle cx="10" cy="63" r="2" fill="#555" />
+            <circle cx="26" cy="63" r="4.5" fill="#111" />
+            <circle cx="26" cy="63" r="2" fill="#555" />
+            <path d="M18 61 Q80 80 142 61" stroke="#c0c0c0" stroke-width="5.5" fill="none" stroke-linecap="round" />
+            <circle cx="80" cy="20" r="16" fill="#7c3aed" />
+            <circle cx="80" cy="20" r="6.5" fill="white" />
+            <path d="M71 33 Q80 50 89 33" fill="#7c3aed" />
+            <circle cx="80" cy="57" r="5.5" fill="#7c3aed" />
+            <line x1="89" y1="57" x2="120" y2="57" stroke="#c0c0c0" stroke-width="2.5" stroke-dasharray="5 5" />
+            <rect x="118" y="40" width="40" height="26" rx="3" fill="#e5e7eb" />
+            <rect x="129" y="48" width="9" height="18" fill="#374151" />
+            <path d="M116 43 Q126 31 136 43 Q146 31 158 43" fill="#7c3aed" />
+            <rect x="121" y="24" width="14" height="15" rx="2.5" fill="#7c3aed" />
+            <path d="M128 22 Q133 15 138 22" stroke="#7c3aed" stroke-width="2.5" fill="none" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="consent-title">가는김에</div>
+        <div class="consent-sub">내 이동 패턴을 분석해 출퇴근 동선 위의<br><strong>'지금 들를 수 있는'</strong> 장소를 추천해드려요.</div>
+
+        <div class="consent-item required" id="consent-item-commute">
+          <div class="consent-row">
+            <div class="consent-label-wrap">
+              <span class="consent-label">승·하차 이력 분석</span>
+              <span class="tag-req">필수</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="sw-commute" onchange="onCommuteToggle()">
+              <div class="sw-track"></div>
+            </label>
+          </div>
+          <div class="consent-desc">최근 30일 대중교통 이력으로 생활권 지도를 생성합니다.</div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-row">
+            <div class="consent-label-wrap">
+              <span class="consent-label">방문 히스토리 활용</span>
+              <span class="tag-opt">선택</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="sw-history">
+              <div class="sw-track"></div>
+            </label>
+          </div>
+          <div class="consent-desc">자주 방문한 장소를 지도에 핀으로 표시합니다.</div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-row">
+            <div class="consent-label-wrap">
+              <span class="consent-label">마케팅 정보 수신</span>
+              <span class="tag-opt">선택</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="sw-marketing">
+              <div class="sw-track"></div>
+            </label>
+          </div>
+          <div class="consent-desc">퇴근 30분 전 혜택 장소 추천 푸시를 받습니다.</div>
+        </div>
+
+        <button class="consent-btn" id="consent-btn" onclick="agreeAndLoad()" disabled
+          style="background:#d1d5db;cursor:not-allowed;opacity:1">동의하고 시작하기</button>
+        <div class="consent-cancel" onclick="closeConsent()">취소</div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════
+     S4 · 생활권 분석 로딩
+════════════════════════════════════ -->
+    <div id="s-loading" class="screen" style="background:#0c1120;align-items:center;justify-content:center">
+      <div class="loading-wrap">
+        <div class="loading-map-preview">
+          <svg class="lmap-svg" viewBox="0 0 240 240">
+            <rect width="240" height="240" fill="#162035" />
+            <line x1="0" y1="80" x2="240" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="12" />
+            <line x1="0" y1="160" x2="240" y2="160" stroke="rgba(255,255,255,0.07)" stroke-width="12" />
+            <line x1="60" y1="0" x2="60" y2="240" stroke="rgba(255,255,255,0.07)" stroke-width="12" />
+            <line x1="180" y1="0" x2="180" y2="240" stroke="rgba(255,255,255,0.07)" stroke-width="12" />
+            <path id="lroute" class="lroute"
+              d="M 30 200 L 60 200 L 60 160 L 60 80 L 120 80 L 180 80 L 180 160 L 210 160" />
+            <circle id="lpin0" class="lpin" cx="60" cy="200" r="7" fill="#7c3aed" />
+            <circle id="lpin1" class="lpin" cx="180" cy="160" r="7" fill="#2563eb" />
+            <circle id="lpin2" class="lpin" cx="120" cy="80" r="5" fill="#059669" />
+          </svg>
+        </div>
+        <div class="loading-title">생활권 지도 생성 중</div>
+        <div class="loading-desc">최근 30일 이동 패턴을 분석하고 있어요<br>잠시만 기다려 주세요</div>
+        <div class="lbar-wrap">
+          <div class="lbar" id="lbar"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════
+     S5 · 생활권 지도 (인터랙티브)
+════════════════════════════════════ -->
+    <div id="s-map" class="screen" style="overflow:hidden">
+
+      <div class="map-topbar">
+        <div class="map-topbar-row">
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="map-back" onclick="goTo('s-travel')">←</button>
+            <span class="map-title">📍 가는김에</span>
+          </div>
+          <div class="route-btns">
+            <button class="route-btn commute-on" id="commute-btn" onclick="toggleCommuteRoute()">
+              <div class="route-dot"></div><span>출퇴근</span>
+            </button>
+            <button class="route-btn weekend-on" id="weekend-btn" onclick="toggleWeekendRoute()">
+              <div class="route-dot"></div><span>주말</span>
+            </button>
+          </div>
+        </div>
+        <div class="cat-scroll" id="cat-scroll">
+          <button class="cat-chip on" data-filter="all" onclick="setCat(this)">전체</button>
+          <button class="cat-chip" data-filter="food" onclick="setCat(this)">🍽 맛집</button>
+          <button class="cat-chip" data-filter="fun" onclick="setCat(this)">🎡 놀거리</button>
+        </div>
+      </div>
+
+      <!-- 지도 뷰포트 -->
+      <div class="map-vp" id="map-vp">
+
+        <!-- 카카오 지도 컨테이너 -->
+        <div id="kakao-map" style="position:absolute;inset:0;width:100%;height:100%;z-index:0"></div>
+
+        <div class="map-insight">
+          <strong>noname 이동 패턴 · 72건</strong>
+          <span>노원 ⇄ 혜화/종로3가 중심<br>2026.04.08 - 2026.05.08</span>
+        </div>
+        <div class="map-legend">
+          <span class="legend-item"><i class="legend-dot" style="background:#059669"></i>노선 근접</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#f59e0b"></i>중간</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>노선 멀</span>
+        </div>
+
+        <!-- 컨트롤 버튼 -->
+        <div class="map-ctrl" id="map-ctrl">
+          <button class="ctrl-btn" onclick="mapZoomIn()">＋</button>
+          <button class="ctrl-btn" onclick="mapZoomOut()">－</button>
+        </div>
+        <button class="loc-btn" id="loc-btn" onclick="mapReset()">📍</button>
+
+        <!-- ── 하단 카드 리스트 ── -->
+        <div class="card-shelf" id="card-shelf">
+          <div class="shelf-handle"></div>
+          <div class="shelf-label" id="shelf-label">noname 이동 패턴 · 주요 5곳</div>
+          <div class="card-row" id="card-row">
+            <div class="place-card" id="c-0" onclick="selectPlace(0)">
+              <div class="card-thumb" style="background:#fff7ed">🍜<span class="card-tag"
+                  style="background:#f97316">맛집</span></div>
+              <div class="card-body">
+                <div class="card-name">낙원상가 국밥골목</div>
+                <div class="card-cat">한식 · 도보 3분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-1" onclick="selectPlace(1)">
+              <div class="card-thumb" style="background:#fef3c7">☕<span class="card-tag"
+                  style="background:#f97316">맛집</span></div>
+              <div class="card-body">
+                <div class="card-name">인사동 카페거리</div>
+                <div class="card-cat">카페 · 도보 5분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-2" onclick="selectPlace(2)">
+              <div class="card-thumb" style="background:#fce7f3">🍣<span class="card-tag"
+                  style="background:#f97316">맛집</span></div>
+              <div class="card-body">
+                <div class="card-name">혜화 스시집</div>
+                <div class="card-cat">일식 · 도보 1분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-3" onclick="selectPlace(3)">
+              <div class="card-thumb" style="background:#ecfdf5">🌉<span class="card-tag"
+                  style="background:#059669">놀거리</span></div>
+              <div class="card-body">
+                <div class="card-name">여의나루 한강공원</div>
+                <div class="card-cat">한강 · 도보 3분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-4" onclick="selectPlace(4)">
+              <div class="card-thumb" style="background:#ecfdf5">🎡<span class="card-tag"
+                  style="background:#059669">놀거리</span></div>
+              <div class="card-body">
+                <div class="card-name">용산 아이파크몰</div>
+                <div class="card-cat">쇼핑 · 도보 5분</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 미니 바텀시트 ── -->
+        <div class="mini-sheet" id="mini-sheet">
+          <div class="ms-handle"></div>
+          <div class="ms-head">
+            <div>
+              <div class="ms-name" id="ms-name">—</div>
+              <div class="ms-cat" id="ms-cat">—</div>
+            </div>
+            <button class="ms-close" onclick="closeSheet()">✕</button>
+          </div>
+          <!-- 평점 + 영업 정보 -->
+          <div class="ms-info-row">
+            <span class="ms-rating-stars" id="ms-rating-stars">★★★★☆</span>
+            <span class="ms-rating-val" id="ms-rating-val">4.0</span>
+            <span class="ms-rcount" id="ms-rcount">(0)</span>
+            <span class="ms-dot">·</span>
+            <span class="ms-open-tag" id="ms-open">—</span>
+            <span class="ms-hours" id="ms-hours">—</span>
+          </div>
+          <!-- 거점 기준 이동수단 소요시간 -->
+          <div class="ms-transit-wrap">
+            <div class="ms-transit-hdr" id="ms-transit-hdr">종로3가역 기준</div>
+            <div class="ms-transit">
+              <div class="ms-tcell">
+                <div class="tc-icon">🚶</div>
+                <div class="tc-time" id="ms-walk">—</div>
+                <div class="tc-label">도보</div>
+              </div>
+              <div class="ms-tcell">
+                <div class="tc-icon">🚲</div>
+                <div class="tc-time" id="ms-bike">—</div>
+                <div class="tc-label">자전거·킥보드</div>
+              </div>
+              <div class="ms-tcell">
+                <div class="tc-icon">🚌</div>
+                <div class="tc-time" id="ms-bus">—</div>
+                <div class="tc-label">버스</div>
+              </div>
+            </div>
+          </div>
+          <div class="ms-actions">
+            <button class="ms-btn-sub" onclick="tapBike()">🚴 따릉이 대여</button>
+            <button class="ms-btn-main" onclick="tapNav()">🧭 길 안내</button>
+          </div>
+          <div class="ms-more" onclick="tapMore()">자세히 보기 ›</div>
+        </div>
+
+        <!-- 푸시 배너 -->
+        <div class="push-banner" id="push-banner" onclick="onPushTap()">
+          <div class="push-icon">📍</div>
+          <div>
+            <div class="push-title">noname 이동 패턴 · 출근 축</div>
+            <div class="push-body">혜화역 하차 후 재향군인회관 방향<br>반복 기록이 가장 뚜렷해요</div>
+          </div>
+        </div>
+
+      </div><!-- /map-vp -->
+    </div><!-- /s-map -->
+
+
+    <!-- ════════════════════════════════════
+     S6 · 방문 인증 & 마일리지
+════════════════════════════════════ -->
+    <div id="s-checkin" class="screen" style="background:rgba(0,0,0,0.55);align-items:center;justify-content:center">
+      <div class="checkin-card">
+        <span class="ck-emoji">🎉</span>
+        <div class="ck-title">방문 인증 완료!</div>
+        <div class="ck-desc">반복 방문 지점이 확인되었어요.<br>마일리지가 적립되었습니다.</div>
+        <div class="ck-mileage">⭐ +50 마일리지</div>
+        <div class="ck-rate-label">방문 어떠셨나요?</div>
+        <div class="star-row" id="star-row">
+          <span class="star" onclick="rateStar(1)">★</span>
+          <span class="star" onclick="rateStar(2)">★</span>
+          <span class="star" onclick="rateStar(3)">★</span>
+          <span class="star" onclick="rateStar(4)">★</span>
+          <span class="star" onclick="rateStar(5)">★</span>
+        </div>
+        <button class="ck-confirm" onclick="goTo('s-map')">확인</button>
+        <div class="ck-skip" onclick="goTo('s-map')">나중에 평가하기</div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+  </div><!-- /phone -->
+
+  <script>
+    'use strict';
+
+    /* ─────────────────────────────────────
+       DATA
+    ───────────────────────────────────── */
+    const PLACES = [
+      // idx 0~2: 맛집
+      {
+        name: '낙원상가 국밥골목', cat: '맛집 · 한식',
+        status: '영업중', statusTone: 'open', hours: '11:00 ~ 22:00',
+        rating: 4.1, reviewCount: 86,
+        transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        filters: ['food'], pinX: 390, pinY: 460
+      },
+      {
+        name: '인사동 카페거리', cat: '맛집 · 카페/디저트',
+        status: '영업중', statusTone: 'open', hours: '10:00 ~ 21:00',
+        rating: 4.3, reviewCount: 214,
+        transitBase: '종로3가역', walk: '5분', bike: '3분', bus: '6분',
+        filters: ['food'], pinX: 470, pinY: 490
+      },
+      {
+        name: '혜화 스시집', cat: '맛집 · 일식',
+        status: '영업중', statusTone: 'open', hours: '12:00 ~ 22:00',
+        rating: 4.6, reviewCount: 312,
+        transitBase: '혜화역', walk: '1분', bike: '<1분', bus: '3분',
+        filters: ['food'], pinX: 510, pinY: 425
+      },
+      // idx 3~4: 놀거리
+      {
+        name: '여의나루 한강공원', cat: '놀거리 · 한강/야외',
+        status: '개방중', statusTone: 'open', hours: '24시간',
+        rating: 4.5, reviewCount: 2310,
+        transitBase: '여의나루역', walk: '3분', bike: '5분', bus: '—',
+        filters: ['fun'], pinX: 255, pinY: 720
+      },
+      {
+        name: '용산 아이파크몰', cat: '놀거리 · 쇼핑/엔터',
+        status: '영업중', statusTone: 'open', hours: '10:30 ~ 22:00',
+        rating: 4.2, reviewCount: 430,
+        transitBase: '용산역', walk: '5분', bike: '3분', bus: '7분',
+        filters: ['fun'], pinX: 430, pinY: 690
+      },
+    ];
+    // 출퇴근 노선 경로 샘플 포인트 (SVG 좌표)
+    const ROUTE_POINTS = [
+      { x: 690, y: 150 }, { x: 650, y: 200 }, { x: 610, y: 235 }, { x: 575, y: 275 },
+      { x: 535, y: 330 }, { x: 490, y: 380 }, { x: 455, y: 410 }, { x: 440, y: 450 }, { x: 430, y: 505 }
+    ];
+    function distToRoute(px, py) {
+      let minD = Infinity;
+      for (const p of ROUTE_POINTS) {
+        const d = Math.hypot(px - p.x, py - p.y);
+        if (d < minD) minD = d;
+      }
+      return minD;
+    }
+    function pinColorByDist(dist) {
+      if (dist < 80) return { border: '#059669', bg: '#ecfdf5' }; // 초록
+      if (dist < 180) return { border: '#f59e0b', bg: '#fffbeb' }; // 노랑
+      return { border: '#ef4444', bg: '#fff1f2' };    // 빨강
+    }
+
+    /* ─────────────────────────────────────
+       CLOCK
+    ───────────────────────────────────── */
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const t = `${h}:${m}`;
+      ['clock-home', 'clock-travel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = t;
+      });
+    }
+    updateClock();
+    setInterval(updateClock, 15000);
+
+    /* ─────────────────────────────────────
+       SCREEN NAVIGATION
+    ───────────────────────────────────── */
+    function goTo(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    }
+
+    /* ─────────────────────────────────────
+       CONSENT
+    ───────────────────────────────────── */
+    function _resetConsent() {
+      // 토글 전체 초기화
+      const sw = document.getElementById('sw-commute');
+      const swH = document.getElementById('sw-history');
+      const swM = document.getElementById('sw-marketing');
+      if (sw) sw.checked = false;
+      if (swH) swH.checked = false;
+      if (swM) swM.checked = false;
+      // 버튼 비활성화
+      const btn = document.getElementById('consent-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.style.background = '#d1d5db';
+        btn.style.cursor = 'not-allowed';
+      }
+    }
+    function openConsent() {
+      const sc = document.getElementById('s-consent');
+      const sheet = document.getElementById('consent-sheet');
+      _resetConsent();
+      sheet.style.transform = 'translateY(100%)';
+      sc.style.background = 'rgba(0,0,0,0)';
+      sc.style.justifyContent = 'flex-end';
+      sc.classList.add('active');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          sheet.style.transform = 'translateY(0)';
+          sc.style.background = 'rgba(0,0,0,0.55)';
+        });
+      });
+    }
+    function onCommuteToggle() {
+      const checked = document.getElementById('sw-commute').checked;
+      const btn = document.getElementById('consent-btn');
+      if (checked) {
+        btn.disabled = false;
+        btn.style.background = '#7c3aed';
+        btn.style.cursor = 'pointer';
+      } else {
+        btn.disabled = true;
+        btn.style.background = '#d1d5db';
+        btn.style.cursor = 'not-allowed';
+      }
+    }
+    function _dismissConsent(onDone) {
+      const sc = document.getElementById('s-consent');
+      const sheet = document.getElementById('consent-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => {
+        sc.classList.remove('active');
+        onDone();
+      }, 400);
+    }
+    function closeConsent() {
+      _dismissConsent(() => { });
+    }
+    function agreeAndLoad() {
+      const btn = document.getElementById('consent-btn');
+      if (btn && btn.disabled) return;
+      _dismissConsent(() => {
+        goTo('s-loading');
+        startLoading();
+      });
+    }
+    // 바텀시트 외부(dim 영역) 클릭 시 닫기
+    document.getElementById('s-consent').addEventListener('click', function (e) {
+      if (!e.target.closest('#consent-sheet')) closeConsent();
+    });
+
+    /* ─────────────────────────────────────
+       LOADING
+    ───────────────────────────────────── */
+    function startLoading() {
+      // 애니메이션 리셋 (재방문 대비)
+      const route = document.getElementById('lroute');
+      route.classList.remove('anim');
+      ['lpin0', 'lpin1', 'lpin2'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('show');
+      });
+      const bar = document.getElementById('lbar');
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+
+      // 다음 프레임에서 애니메이션 시작
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          route.classList.add('anim');
+          bar.style.transition = 'width 3.4s cubic-bezier(0.4,0,0.6,1)';
+          bar.style.width = '100%';
+          setTimeout(() => document.getElementById('lpin0').classList.add('show'), 1800);
+          setTimeout(() => document.getElementById('lpin1').classList.add('show'), 2200);
+          setTimeout(() => document.getElementById('lpin2').classList.add('show'), 2600);
+        });
+      });
+
+      // 3.8초 후 지도로 이동
+      setTimeout(() => {
+        goTo('s-map');
+        mapInit();
+        setTimeout(showPush, 4000);
+      }, 3800);
+    }
+
+    /* ─────────────────────────────────────
+       WAYPOINT EDIT
+    ───────────────────────────────────── */
+    let _wpPopup = null;
+    function editWaypoint(pinEl, wpId) {
+      // 기존 팝업 닫기
+      if (_wpPopup) { _wpPopup.remove(); _wpPopup = null; }
+
+      const labelEl = document.getElementById(wpId);
+      const currentText = labelEl.textContent.replace(/^[🏠🏢]\s*/, '');
+
+      const popup = document.createElement('div');
+      popup.className = 'waypoint-edit-popup';
+
+      // 핀 기준 위치 (map-vp 안에서)
+      const pinRect = pinEl.getBoundingClientRect();
+      const vpRect = document.getElementById('map-vp').getBoundingClientRect();
+      const popLeft = Math.min(pinRect.left - vpRect.left - 10, vpRect.width - 230);
+      const popTop = pinRect.top - vpRect.top + 10;
+
+      popup.style.left = Math.max(8, popLeft) + 'px';
+      popup.style.top = popTop + 'px';
+
+      const icon = wpId === 'wp-0' ? '🏠' : '🏢';
+      popup.innerHTML = `
+    <h4>거점 이름 변경</h4>
+    <input id="wp-input" type="text" value="${currentText}" placeholder="예: 집, 회사, 학교…" maxlength="12"/>
+    <div class="waypoint-edit-actions">
+      <button class="wp-btn-cancel" onclick="closeWpPopup()">취소</button>
+      <button class="wp-btn-save"   onclick="saveWaypoint('${wpId}','${icon}')">저장</button>
+    </div>`;
+
+      document.getElementById('map-vp').appendChild(popup);
+      _wpPopup = popup;
+
+      const inp = document.getElementById('wp-input');
+      inp.focus(); inp.select();
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') saveWaypoint(wpId, icon);
+        if (e.key === 'Escape') closeWpPopup();
+      });
+    }
+    function closeWpPopup() {
+      if (_wpPopup) { _wpPopup.remove(); _wpPopup = null; }
+    }
+    function saveWaypoint(wpId, icon) {
+      const val = (document.getElementById('wp-input')?.value || '').trim();
+      if (val) {
+        document.getElementById(wpId).textContent = icon + ' ' + val;
+        showToast('✅ 거점 이름이 저장되었어요');
+      }
+      closeWpPopup();
+    }
+
+    /* ─────────────────────────────────────
+       ROUTE TOGGLE
+    ───────────────────────────────────── */
+    let commuteOn = true;
+    let weekendOn = true;
+
+
+
+
+    /* ─────────────────────────────────────
+       TOAST
+    ───────────────────────────────────── */
+    let _toastTimer = null;
+    function showToast(msg, ms = 2600) {
+      const t = document.getElementById('toast');
+      if (_toastTimer) clearTimeout(_toastTimer);
+      t.textContent = msg;
+      t.classList.add('show');
+      _toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+    /* ─────────────────────────────────────
+       PUSH
+    ───────────────────────────────────── */
+    let pushTimer = null;
+    function showPush() {
+      const el = document.getElementById('push-banner');
+      el.classList.add('show');
+      pushTimer = setTimeout(() => el.classList.remove('show'), 5500);
+    }
+    function hidePush() {
+      const el = document.getElementById('push-banner');
+      el.classList.remove('show');
+      clearTimeout(pushTimer);
+    }
+    function onPushTap() {
+      hidePush();
+      selectPlace(0);
+    }
+
+    /* ─────────────────────────────────────
+       PLACE SELECTION / SHEET STATE
+    ───────────────────────────────────── */
+    let currentPlace = -1;
+    let sheetOpen = false;
+    const MAP_CONTROL_BOTTOM = 14;
+
+    function setMapControlsBottom(px) {
+      const bottom = `${px}px`;
+      document.getElementById('map-ctrl').style.bottom = bottom;
+      document.getElementById('loc-btn').style.bottom = bottom;
+    }
+
+    function tapBike() {
+      showToast('🚴 가까운 따릉이 대여소를 찾는 중...');
+      setTimeout(() => showToast('✅ 반경 300m 내 따릉이 대여소 3곳을 찾았습니다'), 1600);
+    }
+    function tapNav() {
+      closeSheet();
+      showToast('🧭 noname의 반복 경로를 다시 표시합니다');
+    }
+    function tapMore() {
+      showToast('장소 상세 정보 페이지로 이동합니다');
+    }
+
+    /* ─────────────────────────────────────
+       별점
+    ───────────────────────────────────── */
+    function rateStar(n) {
+      document.querySelectorAll('#star-row .star').forEach((s, i) => {
+        s.classList.toggle('on', i < n);
+      });
+      setTimeout(() => goTo('s-map'), 750);
+    }
+
+    /* ─────────────────────────────────────
+       KAKAO 지도 (Phase 5)
+    ───────────────────────────────────── */
+
+    // ── 전역 변수 ──
+    let kakaoMap = null;
+    let commutePolyline  = null;
+    let commuteReturnPoly = null;
+    let weekendPolyline  = null;
+    let placeOverlays    = [];   // 장소 핀 CustomOverlay[]
+    let waypointOverlays = [];   // 거점 핀 CustomOverlay[]
+    let mapReady = false;
+    let activeFilter = 'all';
+
+    function matchesActiveFilter(place) {
+      return activeFilter === 'all' || place.filters.includes(activeFilter);
+    }
+
+    // ── 실좌표 데이터 ──
+    // PLACES에 lat/lng 추가 (PLACES 배열은 그대로 사용하되 인덱스로 참조)
+    const PLACE_COORDS = [
+      { lat: 37.5722, lng: 126.9864 },  // 0: 낙원상가 국밥골목
+      { lat: 37.5745, lng: 126.9843 },  // 1: 인사동 카페거리
+      { lat: 37.5822, lng: 127.0020 },  // 2: 혜화 스시집
+      { lat: 37.5283, lng: 126.9336 },  // 3: 여의나루 한강공원
+      { lat: 37.5300, lng: 126.9647 },  // 4: 용산 아이파크몰
+    ];
+
+    // 거점
+    const WAYPOINT_COORDS = [
+      { lat: 37.6559, lng: 127.0642, id: 'wp-0', icon: '🏠', label: '집', color: '#7c3aed' },
+      { lat: 37.5713, lng: 126.9920, id: 'wp-1', icon: '🏢', label: '회사', color: '#059669' },
+    ];
+
+    // 출퇴근 노선 (노원 → 종로3가)
+    const COMMUTE_PATH = [
+      [37.6559, 127.0642],
+      [37.6380, 127.0510],
+      [37.6200, 127.0330],
+      [37.6050, 127.0200],
+      [37.5930, 127.0120],
+      [37.5822, 127.0020],  // 혜화
+      [37.5713, 126.9920],  // 종로3가 (회사)
+    ];
+
+    // 퇴근 노선 (약간 다른 경로, 점선)
+    const RETURN_PATH = [
+      [37.5713, 126.9920],
+      [37.5760, 126.9980],
+      [37.5840, 127.0050],
+      [37.5950, 127.0150],
+      [37.6100, 127.0250],
+      [37.6280, 127.0400],
+      [37.6559, 127.0642],
+    ];
+
+    // 주말 노선 (노원 → 여의나루)
+    const WEEKEND_PATH = [
+      [37.6559, 127.0642],
+      [37.6200, 127.0200],
+      [37.5950, 127.0050],
+      [37.5822, 127.0020],  // 혜화
+      [37.5713, 126.9920],  // 종로
+      [37.5600, 126.9750],
+      [37.5450, 126.9550],
+      [37.5300, 126.9400],
+      [37.5283, 126.9336],  // 여의나루
+    ];
+
+    // ── 노선 거리 기반 색상 ──
+    function haverDist(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function distToRoutePath(lat, lng, path) {
+      let minD = Infinity;
+      for (const [plat, plng] of path) {
+        const d = haverDist(lat, lng, plat, plng);
+        if (d < minD) minD = d;
+      }
+      return minD;
+    }
+    function pinColorByDist(dist) {
+      if (dist < 500)  return { border: '#059669', bg: '#ecfdf5' };  // 초록
+      if (dist < 1500) return { border: '#f59e0b', bg: '#fffbeb' };  // 노랑
+      return               { border: '#ef4444', bg: '#fff1f2' };     // 빨강
+    }
+
+    // ── 핀 HTML 생성 ──
+    function makePinHTML(idx) {
+      const p = PLACES[idx];
+      const coord = PLACE_COORDS[idx];
+      const dist = distToRoutePath(coord.lat, coord.lng, COMMUTE_PATH);
+      const col = pinColorByDist(dist);
+      const emoji = ['🍜','☕','🍣','🌉','🎡'][idx] || '📍';
+      return `<div class="kakao-pin" data-idx="${idx}" onclick="selectPlace(${idx})"
+                style="display:flex;flex-direction:column;align-items:center;cursor:pointer;padding-bottom:8px">
+        <div class="pin-caption" style="margin-bottom:3px">${p.name}</div>
+        <div class="disc-bubble" id="db-${idx}"
+             style="border-color:${col.border};background:${col.bg};
+                    width:36px;height:36px;border-radius:50%;border:2.5px solid;
+                    display:flex;align-items:center;justify-content:center;font-size:16px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.2);position:relative">
+          ${emoji}
+          <span style="position:absolute;top:100%;left:50%;transform:translateX(-50%);
+                       width:0;height:0;margin-top:-1px;
+                       border-left:6px solid transparent;border-right:6px solid transparent;
+                       border-top:9px solid ${col.bg}"></span>
+        </div>
+      </div>`;
+    }
+
+    function makeWaypointHTML(wp) {
+      return `<div class="map-pin waypoint-pin" onclick="editWaypoint(this,'${wp.id}')"
+               style="cursor:pointer">
+        <div class="pin-bubble" style="display:flex;flex-direction:column;align-items:center">
+          <div class="pin-label waypoint-label" id="${wp.id}" style="background:#fff;border-radius:9px;padding:3px 9px;font-size:10.5px;font-weight:700;color:#1f2937;box-shadow:0 2px 8px rgba(0,0,0,.15);margin-bottom:4px;white-space:nowrap">${wp.icon} ${wp.label}</div>
+          <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3);background:${wp.color}">${wp.icon}</div>
+        </div>
+      </div>`;
+    }
+
+    // ── mapInit (Kakao 버전) ──
+    function mapInit() {
+      const container = document.getElementById('kakao-map');
+      if (!container) return;
+
+      // 카카오 SDK 로드 확인
+      if (typeof kakao === 'undefined' || !kakao.maps) {
+        container.style.background = '#1e1e2e';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.innerHTML = '<div style="color:#a78bfa;text-align:center;padding:24px;font-size:14px;font-weight:700">' +
+          '📍 카카오 지도 초기화 실패<br><span style="font-size:12px;color:#9ca3af;font-weight:400;margin-top:8px;display:block">' +
+          '카카오 콘솔 → 앱 설정 → 플랫폼 → Web에<br><b style="color:#a78bfa">http://localhost:3000</b> 도메인을 등록해주세요</span></div>';
+        return;
+      }
+
+      // 지도 생성
+      const center = new kakao.maps.LatLng(37.5900, 127.0100);
+      const options = { center, level: 6 };
+      kakaoMap = new kakao.maps.Map(container, options);
+
+      // 지도 UI 컨트롤 비활성화 (직접 버튼 사용)
+      // kakaoMap.setZoomable(true);
+
+      // ── 출퇴근 노선 (보라, 실선) ──
+      commutePolyline = new kakao.maps.Polyline({
+        path: COMMUTE_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+        strokeWeight: 7, strokeColor: '#7c3aed', strokeOpacity: 0.9, strokeStyle: 'solid'
+      });
+      commutePolyline.setMap(kakaoMap);
+
+      // ── 퇴근 노선 (주황, 점선) ──
+      commuteReturnPoly = new kakao.maps.Polyline({
+        path: RETURN_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+        strokeWeight: 5, strokeColor: '#f97316', strokeOpacity: 0.85, strokeStyle: 'shortdot'
+      });
+      commuteReturnPoly.setMap(kakaoMap);
+
+      // ── 주말 노선 (청록) ──
+      weekendPolyline = new kakao.maps.Polyline({
+        path: WEEKEND_PATH.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng)),
+        strokeWeight: 6, strokeColor: '#059669', strokeOpacity: 0.9, strokeStyle: 'solid'
+      });
+      weekendPolyline.setMap(kakaoMap);
+
+      // ── 장소 핀 CustomOverlay ──
+      placeOverlays.forEach(o => o.setMap(null));
+      placeOverlays = [];
+      PLACES.forEach((p, idx) => {
+        const coord = PLACE_COORDS[idx];
+        const overlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(coord.lat, coord.lng),
+          content: makePinHTML(idx),
+          xAnchor: 0.5,
+          yAnchor: 1.0,
+          zIndex: 3
+        });
+        overlay.setMap(kakaoMap);
+        placeOverlays.push(overlay);
+      });
+
+      // ── 거점 핀 ──
+      waypointOverlays.forEach(o => o.setMap(null));
+      waypointOverlays = [];
+      WAYPOINT_COORDS.forEach(wp => {
+        const overlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(wp.lat, wp.lng),
+          content: makeWaypointHTML(wp),
+          xAnchor: 0.5,
+          yAnchor: 1.0,
+          zIndex: 5
+        });
+        overlay.setMap(kakaoMap);
+        waypointOverlays.push(overlay);
+      });
+
+      // 지도 빈 곳 클릭 → 시트/팝업 닫기
+      kakao.maps.event.addListener(kakaoMap, 'click', () => {
+        closeWpPopup();
+        if (sheetOpen) closeSheet();
+      });
+
+      // 필터/버튼 초기화
+      commuteOn = true; weekendOn = true;
+      const cb = document.getElementById('commute-btn');
+      const wb = document.getElementById('weekend-btn');
+      if (cb) cb.className = 'route-btn commute-on';
+      if (wb) wb.className = 'route-btn weekend-on';
+
+      const allChip = document.querySelector('.cat-chip[data-filter="all"]');
+      if (allChip) setCat(allChip);
+
+      closeSheet();
+      mapReady = true;
+    }
+
+    // ── 줌 / 리셋 ──
+    function mapZoomIn()  { if (kakaoMap) kakaoMap.setLevel(kakaoMap.getLevel() - 1); }
+    function mapZoomOut() { if (kakaoMap) kakaoMap.setLevel(kakaoMap.getLevel() + 1); }
+    function mapReset() {
+      if (!kakaoMap) return;
+      kakaoMap.setCenter(new kakao.maps.LatLng(37.5900, 127.0100));
+      kakaoMap.setLevel(6);
+    }
+
+    // ── 노선 토글 ──
+    function toggleCommuteRoute() {
+      commuteOn = !commuteOn;
+      if (commutePolyline)   commutePolyline.setMap(commuteOn ? kakaoMap : null);
+      if (commuteReturnPoly) commuteReturnPoly.setMap(commuteOn ? kakaoMap : null);
+      document.getElementById('commute-btn').className = 'route-btn ' + (commuteOn ? 'commute-on' : 'commute-off');
+    }
+    function toggleWeekendRoute() {
+      weekendOn = !weekendOn;
+      if (weekendPolyline) weekendPolyline.setMap(weekendOn ? kakaoMap : null);
+      document.getElementById('weekend-btn').className = 'route-btn ' + (weekendOn ? 'weekend-on' : 'weekend-off');
+    }
+
+    // ── 필터 ──
+    function setCat(el) {
+      activeFilter = el.dataset.filter || 'all';
+      document.querySelectorAll('.cat-chip').forEach(b => {
+        b.classList.remove('on');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      el.classList.add('on');
+      el.setAttribute('aria-pressed', 'true');
+
+      if (currentPlace > -1 && !matchesActiveFilter(PLACES[currentPlace])) closeSheet();
+
+      // 카카오 오버레이 표시/숨김
+      placeOverlays.forEach((overlay, idx) => {
+        overlay.setMap(matchesActiveFilter(PLACES[idx]) ? kakaoMap : null);
+      });
+
+      // 카드 표시/숨김
+      document.querySelectorAll('.place-card[id^="c-"]').forEach(card => {
+        const idx = Number(card.id.slice(2));
+        card.hidden = !matchesActiveFilter(PLACES[idx]);
+      });
+    }
+
+    // ── 핀 클릭 → 지도 이동 ──
+    function selectPlace(idx) {
+      if (!matchesActiveFilter(PLACES[idx])) return;
+      const p = PLACES[idx];
+      const coord = PLACE_COORDS[idx];
+      currentPlace = idx;
+
+      // 지도 해당 위치로 이동
+      if (kakaoMap) kakaoMap.panTo(new kakao.maps.LatLng(coord.lat, coord.lng));
+
+      // 핀 강조
+      document.querySelectorAll('.disc-bubble').forEach(b => b.classList.remove('selected'));
+      const db = document.getElementById('db-' + idx);
+      if (db) db.classList.add('selected');
+
+      document.querySelectorAll('.place-card').forEach(c => c.classList.remove('sel'));
+      const card = document.getElementById('c-' + idx);
+      if (card) card.classList.add('sel');
+
+      // 미니시트 채우기
+      document.getElementById('ms-name').textContent = p.name;
+      document.getElementById('ms-cat').textContent  = p.cat;
+
+      const r = p.rating || 0;
+      const fullStars = Math.floor(r);
+      const halfStar  = r - fullStars >= 0.5 ? 1 : 0;
+      const emptyStars = 5 - fullStars - halfStar;
+      document.getElementById('ms-rating-stars').textContent =
+        '★'.repeat(fullStars) + (halfStar ? '☆' : '') + '☆'.repeat(emptyStars);
+      document.getElementById('ms-rating-val').textContent = r.toFixed(1);
+      document.getElementById('ms-rcount').textContent = `(${(p.reviewCount||0).toLocaleString()})`;
+
+      const openEl = document.getElementById('ms-open');
+      openEl.textContent = p.status || '영업중';
+      openEl.className   = 'ms-open-tag ' + (p.statusTone || 'open');
+      document.getElementById('ms-hours').textContent = p.hours;
+
+      document.getElementById('ms-transit-hdr').textContent = (p.transitBase || '거점') + ' 기준';
+      document.getElementById('ms-walk').textContent = p.walk;
+      document.getElementById('ms-bike').textContent = p.bike;
+      document.getElementById('ms-bus').textContent  = p.bus;
+
+      openSheet();
+    }
+
+    function openSheet() {
+      const sheet = document.getElementById('mini-sheet');
+      sheet.classList.add('open');
+      sheetOpen = true;
+      requestAnimationFrame(() => {
+        const h = sheet.offsetHeight;
+        setMapControlsBottom(h + MAP_CONTROL_BOTTOM);
+      });
+    }
+    function closeSheet() {
+      const sheet = document.getElementById('mini-sheet');
+      sheet.classList.remove('open');
+      sheetOpen = false;
+      currentPlace = -1;
+      setMapControlsBottom(MAP_CONTROL_BOTTOM);
+      document.querySelectorAll('.disc-bubble').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.place-card').forEach(c => c.classList.remove('sel'));
+    }
+
+  </script>
+</body>
+
+</html>
