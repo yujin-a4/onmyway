@@ -2810,7 +2810,7 @@
         <div id="kakao-map" style="position:absolute;inset:0;width:100%;height:100%;z-index:0"></div>
 
         <div class="map-info-panel" id="map-info-panel">
-          <div class="map-info-title" id="map-info-title">강유진 님의 자주가는 노선</div>
+          <div class="map-info-title" id="map-info-title">내 자주 가는 노선</div>
           <div id="map-info-routes"></div>
           <div class="map-info-period" id="map-info-period"></div>
         </div>
@@ -3270,6 +3270,16 @@
         filters: ['shopping'],
         personas: ['대학생'],
       },
+      // idx 21: 맛집 · 주점 (대학생 after-study — 동대입구역 근처)
+      {
+        name: '신당동 포차골목', cat: '맛집 · 포차/주점',
+        status: '영업중', statusTone: 'open', hours: '18:00 ~ 02:00',
+        rating: 4.2, reviewCount: 187,
+        transitBase: '동대입구역', walk: '4분', bike: '2분', bus: '—',
+        navHint: { walk: '5번 출구 → 신당동 방향 직진 300m', bike: '역 앞 거치대 → 신당동 방향 300m', bus: null },
+        filters: ['food', 'after-study'],
+        personas: ['대학생'],
+      },
     ];
     // 출퇴근 노선 경로 샘플 포인트 (SVG 좌표)
     const ROUTE_POINTS = [
@@ -3637,7 +3647,6 @@
       },
       '대학생':  {
         _default:      '곧 동대입구역이에요! 🚇',
-        'after-study': '곧 군자역이에요! 🚇',
         'culture':     '지금 혜화역 지나는 중이에요! 🎭',
       },
       '프리랜서': { _default: '인사동 근처 지나는 중이에요! ✨' },
@@ -3653,7 +3662,7 @@
       },
       '대학생': {
         'breakfast':   14,  // 동대문 24시 해장국 (동대입구역)
-        'after-study':  6,  // 하나양곱창 군자 (군자역)
+        'after-study': 21,  // 신당동 포차골목 (동대입구역)
         'study-cafe':   9,  // 작심스터디카페 (동대입구역)
         'culture':     10,  // 대학로 연극 (혜화역)
       },
@@ -3669,7 +3678,7 @@
     const PREF_BODY_FN = {
       'breakfast':    n => `${n} 들러서 아침 한 끼 어떠세요? 🍜`,
       'after-work':   n => `오늘 퇴근길엔 ${n} 어떠세요? 미리 저장해두세요 🍻`,
-      'after-study':  n => `공부 끝나고 ${n} 어때요? 🍖`,
+      'after-study':  n => `알바 끝나고 ${n} 어때요? 🍻`,
       'meeting-meal': n => `미팅 전에 분위기 좋은 ${n} 어떠세요? 🍶`,
       'cafe':         n => `잠깐 쉬어갈까요? ${n} 자리 있대요 ☕`,
       'workspace':    n => `작업 공간 찾으시나요? ${n} 지금 자리 있대요 💻`,
@@ -4076,6 +4085,7 @@
       { lat: 37.5718, lng: 126.9831 },  // 18: 보드게임카페 종로본점 (종로3가역 NW ~400m)
       { lat: 37.5490, lng: 127.0810 },  // 19: 어린이대공원 (군자역 E ~650m)
       { lat: 37.5668, lng: 127.0093 },  // 20: 두타몰 동대문 (동대입구역 S ~450m)
+      { lat: 37.5612, lng: 127.0098 },  // 21: 신당동 포차골목 (동대입구역 5번 출구 E ~300m)
     ];
 
     // 거점
@@ -4505,6 +4515,11 @@
       }
       const container = document.getElementById('kakao-map');
       if (!container) return;
+
+      // 페르소나 이름·패널은 Kakao 로드 여부와 무관하게 항상 업데이트
+      renderRoutePanel();
+      buildMapInfoPanel();
+
       if (typeof kakao === 'undefined' || !kakao.maps) {
         container.style.background = '#1e1e2e';
         container.style.display = 'flex';
@@ -4514,6 +4529,7 @@
           '📍 카카오 지도 초기화 실패<br><span style="font-size:12px;color:#9ca3af;font-weight:400;margin-top:8px;display:block">' +
           '카카오 콘솔 → 앱 설정 → 플랫폼 → Web에<br><b style="color:#a78bfa">http://localhost:52861</b> 도메인을 등록해주세요</span></div>';
         if (_notifTimer) clearTimeout(_notifTimer);
+        dismissNotif();
         _notifTimer = setTimeout(showNotif, 3000);
         return;
       }
@@ -4593,9 +4609,6 @@
         closeWpPopup();
         if (sheetOpen) closeSheet();
       });
-
-      renderRoutePanel();
-      buildMapInfoPanel();
 
       // 설문에서 선택한 pref 기반으로 초기 카테고리 칩 적용
       applyInitialFilter();
