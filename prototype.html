@@ -2385,7 +2385,7 @@
           <div class="rec-chip-row" id="user-type-row">
             <button class="rec-chip" data-group="type" data-val="직장인" onclick="pickChip(this)">직장인</button>
             <button class="rec-chip" data-group="type" data-val="대학생" onclick="pickChip(this)">대학생</button>
-            <button class="rec-chip" data-group="type" data-val="기타" onclick="pickChip(this)">기타</button>
+            <button class="rec-chip" data-group="type" data-val="프리랜서" onclick="pickChip(this)">프리랜서</button>
           </div>
 
           <p class="rec-section-label" style="margin-top:22px">어떤 정보를 추천 받고 싶으세요?</p>
@@ -2468,7 +2468,10 @@
         <div class="cat-scroll" id="cat-scroll">
           <button class="cat-chip on" data-filter="all" onclick="setCat(this)">전체</button>
           <button class="cat-chip" data-filter="food" onclick="setCat(this)">🍽 맛집</button>
+          <button class="cat-chip" data-filter="culture" onclick="setCat(this)">🏛 문화</button>
           <button class="cat-chip" data-filter="fun" onclick="setCat(this)">🎡 놀거리</button>
+          <button class="cat-chip" data-filter="study" onclick="setCat(this)">📚 자기계발</button>
+          <button class="cat-chip" data-filter="shopping" onclick="setCat(this)">🛍 쇼핑</button>
         </div>
       </div>
 
@@ -2641,42 +2644,117 @@
        DATA
     ───────────────────────────────────── */
     const PLACES = [
-      // idx 0~2: 맛집
+      // idx 0: 맛집 · 한식 (직장인 breakfast / 대학생 breakfast)
       {
         name: '낙원상가 국밥골목', cat: '맛집 · 한식',
         status: '영업중', statusTone: 'open', hours: '11:00 ~ 22:00',
         rating: 4.1, reviewCount: 86,
         transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
-        filters: ['food'], pinX: 390, pinY: 460
+        filters: ['food', 'breakfast'],
       },
+      // idx 1: 맛집 · 카페 (직장인 cafe / 프리랜서 workspace)
       {
         name: '인사동 카페거리', cat: '맛집 · 카페/디저트',
         status: '영업중', statusTone: 'open', hours: '10:00 ~ 21:00',
         rating: 4.3, reviewCount: 214,
         transitBase: '종로3가역', walk: '5분', bike: '3분', bus: '6분',
-        filters: ['food'], pinX: 470, pinY: 490
+        filters: ['food', 'cafe', 'workspace'],
       },
+      // idx 2: 맛집 · 일식 (직장인 after-work / breakfast)
       {
         name: '혜화 스시집', cat: '맛집 · 일식',
         status: '영업중', statusTone: 'open', hours: '12:00 ~ 22:00',
         rating: 4.6, reviewCount: 312,
         transitBase: '혜화역', walk: '1분', bike: '<1분', bus: '3분',
-        filters: ['food'], pinX: 510, pinY: 425
+        filters: ['food', 'after-work', 'breakfast'],
       },
-      // idx 3~4: 놀거리
+      // idx 3: 놀거리 · 한강 (프리랜서 leisure)
       {
         name: '여의나루 한강공원', cat: '놀거리 · 한강/야외',
         status: '개방중', statusTone: 'open', hours: '24시간',
         rating: 4.5, reviewCount: 2310,
         transitBase: '여의나루역', walk: '3분', bike: '5분', bus: '—',
-        filters: ['fun'], pinX: 255, pinY: 720
+        filters: ['fun', 'leisure'],
       },
+      // idx 4: 놀거리 · 쇼핑 (직장인 errands)
       {
         name: '용산 아이파크몰', cat: '놀거리 · 쇼핑/엔터',
         status: '영업중', statusTone: 'open', hours: '10:30 ~ 22:00',
         rating: 4.2, reviewCount: 430,
         transitBase: '용산역', walk: '5분', bike: '3분', bus: '7분',
-        filters: ['fun'], pinX: 430, pinY: 690
+        filters: ['fun', 'errands'],
+      },
+      // idx 5: 맛집 · 포차 (직장인 after-work)
+      {
+        name: '도연회포차', cat: '맛집 · 포차/주점',
+        status: '영업중', statusTone: 'open', hours: '17:00 ~ 01:00',
+        rating: 4.0, reviewCount: 88,
+        transitBase: '종로3가역', walk: '4분', bike: '2분', bus: '5분',
+        filters: ['food', 'after-work'],
+      },
+      // idx 6: 맛집 · 고기 (대학생 after-study)
+      {
+        name: '하나양곱창 군자', cat: '맛집 · 고기/주점',
+        status: '영업중', statusTone: 'open', hours: '17:00 ~ 01:00',
+        rating: 4.1, reviewCount: 63,
+        transitBase: '군자역', walk: '3분', bike: '2분', bus: '—',
+        filters: ['food', 'after-study'],
+      },
+      // idx 7: 맛집 · 한식 (프리랜서 meeting-meal)
+      {
+        name: '삼해집', cat: '맛집 · 한식/전통주',
+        status: '영업중', statusTone: 'open', hours: '11:30 ~ 22:00',
+        rating: 4.5, reviewCount: 310,
+        transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        filters: ['food', 'meeting-meal'],
+      },
+      // idx 8: 자기계발 · 카페 (직장인 cafe / 프리랜서 workspace)
+      {
+        name: '투썸플레이스 을지트윈타워점', cat: '자기계발 · 카페/작업',
+        status: '영업중', statusTone: 'open', hours: '07:30 ~ 22:00',
+        rating: 4.1, reviewCount: 77,
+        transitBase: '을지로3가역', walk: '2분', bike: '1분', bus: '4분',
+        filters: ['study', 'cafe', 'workspace'],
+      },
+      // idx 9: 자기계발 · 스터디카페 (대학생 study-cafe)
+      {
+        name: '작심스터디카페 충무로역점', cat: '자기계발 · 스터디카페',
+        status: '영업중', statusTone: 'open', hours: '24시간',
+        rating: 4.3, reviewCount: 95,
+        transitBase: '충무로역', walk: '3분', bike: '2분', bus: '—',
+        filters: ['study', 'study-cafe'],
+      },
+      // idx 10: 문화 · 공연 (대학생 culture)
+      {
+        name: '대학로 연극 (마로니에공원)', cat: '문화 · 공연/연극',
+        status: '공연중', statusTone: 'open', hours: '화~일 19:30',
+        rating: 4.4, reviewCount: 178,
+        transitBase: '혜화역', walk: '2분', bike: '1분', bus: '4분',
+        filters: ['culture'],
+      },
+      // idx 11: 문화 · 역사 (대학생 culture)
+      {
+        name: '경복궁', cat: '문화 · 궁궐/역사',
+        status: '관람가능', statusTone: 'open', hours: '09:00 ~ 18:00',
+        rating: 4.7, reviewCount: 5820,
+        transitBase: '경복궁역', walk: '5분', bike: '3분', bus: '6분',
+        filters: ['culture'],
+      },
+      // idx 12: 쇼핑 (직장인 errands)
+      {
+        name: '다이소 종로본점', cat: '쇼핑 · 생활용품',
+        status: '영업중', statusTone: 'open', hours: '10:00 ~ 21:00',
+        rating: 4.0, reviewCount: 52,
+        transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        filters: ['shopping', 'errands'],
+      },
+      // idx 13: 놀거리 · 산책 (프리랜서 leisure)
+      {
+        name: '청계천', cat: '놀거리 · 산책/야외',
+        status: '개방중', statusTone: 'open', hours: '24시간',
+        rating: 4.4, reviewCount: 1840,
+        transitBase: '종로3가역', walk: '4분', bike: '2분', bus: '—',
+        filters: ['fun', 'leisure'],
       },
     ];
     // 출퇴근 노선 경로 샘플 포인트 (SVG 좌표)
@@ -2823,11 +2901,11 @@
       ],
       '대학생': [
         { val:'breakfast', label:'간단히 아침 한 끼 할 수 있는 밥집' },
-        { val:'after-study', label:'알바 끝나고 친구들과 술 한 잔 할 수 있는 술집' },
+        { val:'after-study', label:'알바 끝나고 알바 동료들과 술 한 잔 할 수 있는 술집' },
         { val:'study-cafe', label:'시험 기간에 공부할 수 있는 스터디카페' },
         { val:'culture', label:'주말에 혼자 즐길 수 있는 문화·전시 공간' },
       ],
-      '기타': [
+      '프리랜서': [
         { val:'breakfast', label:'간단히 아침 한 끼 할 수 있는 밥집' },
         { val:'after-work', label:'퇴근 후 동료들과 술 한잔 할 수 있는 술집' },
         { val:'workspace', label:'집중할 수 있는 공유 오피스·작업 공간' },
@@ -2838,9 +2916,13 @@
       const group = el.dataset.group;
       document.querySelectorAll(`.rec-chip[data-group="${group}"]`).forEach(b => b.classList.remove('on'));
       el.classList.add('on');
-      if (group === 'type') selectedUserType = el.dataset.val;  // 사용자 유형 저장
+      if (group === 'type') {
+        selectedUserType = el.dataset.val;
+        // 페르소나 변경 시 selectedPrefs 리셋
+        selectedPrefs = [];
+      }
       // 추천 정보 칩 갱신
-      const prefs = PREF_BY_TYPE[el.dataset.val] || PREF_BY_TYPE['기타'];
+      const prefs = PREF_BY_TYPE[el.dataset.val] || PREF_BY_TYPE['프리랜서'];
       const list = document.getElementById('pref-list');
       list.innerHTML = prefs.map(p =>
         `<button class="rec-pref-chip" data-group="pref" data-val="${p.val}" onclick="togglePref(this)">${p.label}</button>`
@@ -2848,6 +2930,12 @@
     }
     function togglePref(el) {
       el.classList.toggle('on');
+      const val = el.dataset.val;
+      if (el.classList.contains('on')) {
+        if (!selectedPrefs.includes(val)) selectedPrefs.push(val);
+      } else {
+        selectedPrefs = selectedPrefs.filter(v => v !== val);
+      }
     }
 
     /* 내 생활권 분석하기 → 로딩 → 지도 */
@@ -2964,6 +3052,7 @@
 
     /* 사용자 타입 및 노선명 저장 */
     let selectedUserType = '직장인'; // 기본값
+    let selectedPrefs    = [];          // 선택한 추천 정보 val 배열
     let routeNames = [];          // [노선1명, 노선명2명(optional)]
     let rnStep = 0;               // 현재 등록 단계
     let namingMap = null;         // 노선명 등록 화면 kakao 지도
@@ -2988,8 +3077,70 @@
        PUSH
     ───────────────────────────────────── */
     let pushTimer = null;
+
+    /* pref val → 카테고리 칩 filter 매핑 */
+    const PREF_TO_FILTER = {
+      'breakfast':    'food',
+      'after-work':   'food',
+      'after-study':  'food',
+      'meeting-meal': 'food',
+      'cafe':         'study',
+      'study-cafe':   'study',
+      'workspace':    'study',
+      'errands':      'shopping',
+      'culture':      'culture',
+      'leisure':      'fun',
+    };
+
+    function applyInitialFilter() {
+      if (selectedPrefs.length === 0) return;
+      const firstFilter = PREF_TO_FILTER[selectedPrefs[0]] || 'all';
+      const chip = document.querySelector(`.cat-chip[data-filter="${firstFilter}"]`);
+      if (chip) setCat(chip);
+    }
+
+    function buildPushMessage() {
+      const hour  = new Date().getHours();
+      const type  = selectedUserType;
+      const prefs = selectedPrefs;
+      if (type === '직장인') {
+        if (hour < 10 && prefs.includes('breakfast'))
+          return { title: '종로3가에서 곧 내리시죠?', body: '도보 3분 낙원상가 국밥골목 🍜 영업중' };
+        if (hour >= 17 && prefs.includes('after-work'))
+          return { title: '오늘 동료들과 한 잔?', body: '도연회포차 종로3가 도보 4분 🍻' };
+        if (hour >= 17 && prefs.includes('cafe'))
+          return { title: '퇴근길 수고했어요 💼', body: '혜화역 근처 인사동 카페거리 ☕ 도보 5분' };
+        if (hour >= 17 && prefs.includes('errands'))
+          return { title: '퇴근길에 필요한 것 있으세요?', body: '다이소 종로본점 도보 3분 · 21:00까지 🛍' };
+      }
+      if (type === '대학생') {
+        if (hour < 11 && prefs.includes('breakfast'))
+          return { title: '성신여대입구역 지나는 중!', body: '충무로 가기 전 낙원상가 국밥골목 🍜 도보 3분' };
+        if (prefs.includes('study-cafe'))
+          return { title: '혜화역 근처에 있어요', body: '작심스터디카페 충무로역점 📚 도보 3분' };
+        if (hour >= 18 && prefs.includes('after-study'))
+          return { title: '알바 끝나고 한 잔?', body: '하나양곱창 군자 군자역 도보 3분 🍺' };
+        if (prefs.includes('culture'))
+          return { title: '대학로에 있어요!', body: '오늘 대학로 연극 공연 있어요 🎭 도보 2분' };
+      }
+      if (type === '프리랜서') {
+        if (prefs.includes('workspace'))
+          return { title: '곧 을지로3가에 도착하시는군요? ✨', body: '투썸플레이스 을지트윈타워점 💻 도보 2분' };
+        if (hour < 12 && prefs.includes('breakfast'))
+          return { title: '아침 스타트 전에~', body: '인사동 카페거리에서 여유롭게 아침 어때요? ☕ 도보 5분' };
+        if (prefs.includes('leisure'))
+          return { title: '종로3가 근처에 있어요', body: '청계천 산책 어때요? 🌊 도보 4분' };
+        if (prefs.includes('meeting-meal'))
+          return { title: '미팅 전 좀 좋은 자리 있어요', body: '삼해집 종로3가 도보 3분 🍽' };
+      }
+      return { title: '가는김에 추천 장소 📍', body: '동선 위의 장소를 확인해보세요' };
+    }
+
     function showPush() {
-      const el = document.getElementById('push-banner');
+      const msg = buildPushMessage();
+      const el  = document.getElementById('push-banner');
+      el.querySelector('.push-title').textContent = msg.title;
+      el.querySelector('.push-body').textContent  = msg.body;
       el.classList.add('show');
       pushTimer = setTimeout(() => el.classList.remove('show'), 5500);
     }
@@ -3064,6 +3215,15 @@
       { lat: 37.5822, lng: 127.0020 },  // 2: 혜화 스시집
       { lat: 37.5283, lng: 126.9336 },  // 3: 여의나루 한강공원
       { lat: 37.5300, lng: 126.9647 },  // 4: 용산 아이파크몰
+      { lat: 37.5714, lng: 126.9921 },  // 5: 도연회포차
+      { lat: 37.5488, lng: 127.0753 },  // 6: 하나양곱창 군자
+      { lat: 37.5713, lng: 126.9918 },  // 7: 삼해집
+      { lat: 37.5665, lng: 126.9920 },  // 8: 투썸플레이스 을지트윈타워점
+      { lat: 37.5608, lng: 127.0046 },  // 9: 작심스터디카페 충무로역점
+      { lat: 37.5822, lng: 127.0027 },  // 10: 대학로 연극
+      { lat: 37.5796, lng: 126.9770 },  // 11: 경복궁
+      { lat: 37.5716, lng: 126.9910 },  // 12: 다이소 종로본점
+      { lat: 37.5700, lng: 126.9784 },  // 13: 청계천
     ];
 
     // 거점
@@ -3206,7 +3366,7 @@
       '직장인': [
         { path: WORKER_SUBWAY_PATH, color: '#7c3aed', style: 'solid', weight: 8, label: '출퇴근', busPath: WORKER_BUS_PATH, desc: '4호선 노원 ↔ 혜화 + 버스', from: '노원', to: '혜화' },
       ],
-      '기타': [
+      '프리랜서': [
         { path: FREELANCE_PATH, color: '#2563eb', style: 'solid', weight: 8, label: '자주가는 노선', busPath: null, desc: '2·3호선 을지로4가 ↔ 종로3가', from: '을지로4가', to: '종로3가' },
       ],
     };
@@ -3362,6 +3522,21 @@
     function buildMapInfoPanel() {
       const type = selectedUserType || '직장인';
       const config = ROUTE_CONFIG[type] || ROUTE_CONFIG['직장인'];
+
+      // 페르소나별 라벨 동적 설정
+      const labelMap = {
+        '직장인':  '출퇴근 동선',
+        '대학생':  '등하교 동선',
+        '프리랜서': '자주 가는 노선',
+      };
+      const label = labelMap[type] || '이동 동선';
+
+      const titleEl = document.getElementById('map-info-title');
+      if (titleEl) titleEl.textContent = `📍 ${label}`;
+
+      const shelfEl = document.getElementById('shelf-label');
+      if (shelfEl) shelfEl.textContent = `${label} · 주요 장소`;
+
       const routesEl = document.getElementById('map-info-routes');
       if (routesEl) {
         routesEl.innerHTML = config.map((r, i) =>
@@ -3410,7 +3585,9 @@
       const coord = PLACE_COORDS[idx];
       const dist = distToRoutePath(coord.lat, coord.lng, COMMUTE_PATH);
       const col = pinColorByDist(dist);
-      const emoji = ['🍜','☕','🍣','🌉','🎡'][idx] || '📍';
+      const emoji = ['🍜','☕','🍣','🌉','🎡',
+                     '🍻','🍖','🍽','💻','📚',
+                     '🎭','🏰','🛍','🌊'][idx] || '📍';
       return `<div class="kakao-pin" data-idx="${idx}" onclick="selectPlace(${idx})"
                 style="display:flex;flex-direction:column;align-items:center;cursor:pointer;padding-bottom:8px">
         <div class="pin-caption" style="margin-bottom:3px">${p.name}</div>
@@ -3531,8 +3708,11 @@
       renderRoutePanel();
       buildMapInfoPanel();
 
-      const allChip = document.querySelector('.cat-chip[data-filter="all"]');
-      if (allChip) setCat(allChip);
+      // 설문에서 선택한 pref 기반으로 초기 카테고리 칩 적용
+      applyInitialFilter();
+
+      // 콘텍스트 푸시 (4초 후)
+      setTimeout(showPush, 4000);
 
       closeSheet();
       mapReady = true;
