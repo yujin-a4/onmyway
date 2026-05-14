@@ -1,0 +1,54 @@
+    sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => {
+        sc.classList.remove('active');
+
+---
+    sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => { sc.classList.remove('active'); openConsen
+---
+    sc.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => {
+        sc.classList.remove('active');
+
+---
+;
+          bar.style.width = '100%';
+          setTimeout(() => document.getElementById('lpin0').classList.
+---
+'lpin0').classList.add('show'), 1800);
+          setTimeout(() => document.getElementById('lpin1').classList.
+---
+'lpin1').classList.add('show'), 2200);
+          setTimeout(() => document.getElementById('lpin2').classList.
+---
+� 후 노선명 등록 화면으로 이동
+      setTimeout(() => {
+        goTo('s-route-naming');
+       
+---
+    t.classList.add('show');
+      _toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+
+---
+     el.classList.add('show');
+      pushTimer = setTimeout(() => el.classList.remove('show'), 5500);
+    }
+---
+�� 따릉이 대여소를 찾는 중...');
+      setTimeout(() => showToast('✅ 반경 300m 내 따릉이 �
+---
+.classList.toggle('on', i < n);
+      });
+      setTimeout(() => goTo('s-map'), 750);
+    }
+
+    /* ─�
+---
+�� 비활성화 (현재 노출 안 함)
+      // setTimeout(showPush, 4000);
+
+      closeSheet();
+      ma
+---

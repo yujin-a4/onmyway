@@ -1,0 +1,272 @@
+div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab" onclick="goTo('s-home')">교통</div>
+          <div class="tab tab-travel on">여행/생활</div>
+          <div class="tab">우리지역</div>
+        <
+---
+시
+    -->
+        <div class="menu-grid">
+          <div class="menu-item" onclick="openConsent()">
+            <div class="menu-icon-wrap purple"
+              style="position:relative;padding:0;display:flex;align-items:center;ju
+---
+i">👤</div><span>마이</span>
+        </div>
+        <div class="nav-home" onclick="goTo('s-home')">🏠</div>
+        <div class="nav-item">
+          <div class="ni">🎁</div><span>혜택</span>
+        </div>
+        <div cl
+---
+">
+            <button class="rec-chip" data-group="type" data-val="직장인" onclick="pickChip(this)">직장인</button>
+            <button class="rec-chip" data-group="type" data-val="대학생" onclick="pickChip(this)">대학생</
+---
+n>
+            <button class="rec-chip" data-group="type" data-val="대학생" onclick="pickChip(this)">대학생</button>
+            <button class="rec-chip" data-group="type" data-val="프리랜서" onclick="pickChip(this)">프리�
+---
+
+            <button class="rec-chip" data-group="type" data-val="프리랜서" onclick="pickChip(this)">프리랜서</button>
+          </div>
+
+          <!-- 페르소나 선택 후 표시 -->
+          <div id="pref-section" style
+---
+     </div>
+        </div>
+
+        <button class="consent-btn" id="rec-btn" onclick="startAnalysis()" style="margin-top:28px">내 생활권 분석하기</button>
+        <div class="consent-cancel" onclick="closeRecommend()">이전�
+---
+:28px">내 생활권 분석하기</button>
+        <div class="consent-cancel" onclick="closeRecommend()">이전으로</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════�
+---
+
+      <div class="rn-bottom-bar">
+        <button class="rn-btn" id="rn-btn" onclick="rnNext()">내 지도 보기</button>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════�
+---
+display:flex;align-items:center;gap:6px">
+            <button class="map-back" onclick="goTo('s-travel')">←</button>
+            <span class="map-title">📍 가는김에</span>
+          </div>
+        </div>
+        <div class="
+---
+roll" id="cat-scroll">
+          <button class="cat-chip on" data-filter="all" onclick="setCat(this)">전체</button>
+          <button class="cat-chip" data-filter="food" onclick="setCat(this)">🍽 맛집</button>
+          <button 
+---
+t(this)">전체</button>
+          <button class="cat-chip" data-filter="food" onclick="setCat(this)">🍽 맛집</button>
+          <button class="cat-chip" data-filter="culture" onclick="setCat(this)">🏛 문화</button>
+          
+---
+>🍽 맛집</button>
+          <button class="cat-chip" data-filter="culture" onclick="setCat(this)">🏛 문화</button>
+          <button class="cat-chip" data-filter="fun" onclick="setCat(this)">🎡 놀거리</button>
+          <
+---
+is)">🏛 문화</button>
+          <button class="cat-chip" data-filter="fun" onclick="setCat(this)">🎡 놀거리</button>
+          <button class="cat-chip" data-filter="study" onclick="setCat(this)">📚 자기계발</button>
+   
+---
+🎡 놀거리</button>
+          <button class="cat-chip" data-filter="study" onclick="setCat(this)">📚 자기계발</button>
+          <button class="cat-chip" data-filter="shopping" onclick="setCat(this)">🛍 쇼핑</button>
+   
+---
+��기계발</button>
+          <button class="cat-chip" data-filter="shopping" onclick="setCat(this)">🛍 쇼핑</button>
+        </div>
+      </div>
+
+      <!-- 지도 뷰포트 -->
+      <div class="map-vp" id="map-vp">
+
+     
+---
+       <div class="map-ctrl" id="map-ctrl">
+          <button class="ctrl-btn" onclick="mapZoomIn()">＋</button>
+          <button class="ctrl-btn" onclick="mapZoomOut()">－</button>
+        </div>
+        <button class="loc-btn" i
+---
+trl-btn" onclick="mapZoomIn()">＋</button>
+          <button class="ctrl-btn" onclick="mapZoomOut()">－</button>
+        </div>
+        <button class="loc-btn" id="loc-btn" onclick="mapReset()">📍</button>
+
+        <!-- ── �
+---
+t()">－</button>
+        </div>
+        <button class="loc-btn" id="loc-btn" onclick="mapReset()">📍</button>
+
+        <!-- ── 하단 카드 리스트 ── -->
+        <div class="card-shelf" id="card-shelf">
+          <di
+---
+v class="card-row" id="card-row">
+            <div class="place-card" id="c-0" onclick="selectPlace(0)">
+              <div class="card-thumb" style="background:#fff7ed">🍜<span class="card-tag"
+                  style="background:#
+---
+       </div>
+            </div>
+            <div class="place-card" id="c-1" onclick="selectPlace(1)">
+              <div class="card-thumb" style="background:#fef3c7">☕<span class="card-tag"
+                  style="background:#f
+---
+       </div>
+            </div>
+            <div class="place-card" id="c-2" onclick="selectPlace(2)">
+              <div class="card-thumb" style="background:#fce7f3">🍣<span class="card-tag"
+                  style="background:#
+---
+       </div>
+            </div>
+            <div class="place-card" id="c-3" onclick="selectPlace(3)">
+              <div class="card-thumb" style="background:#ecfdf5">🌉<span class="card-tag"
+                  style="background:#
+---
+       </div>
+            </div>
+            <div class="place-card" id="c-4" onclick="selectPlace(4)">
+              <div class="card-thumb" style="background:#ecfdf5">🎡<span class="card-tag"
+                  style="background:#
+---
+id="ms-cat">—</div>
+            </div>
+            <button class="ms-close" onclick="closeSheet()">✕</button>
+          </div>
+          <!-- 평점 + 영업 정보 -->
+          <div class="ms-info-row">
+            <span clas
+---
+iv>
+          <div class="ms-actions">
+            <button class="ms-btn-sub" onclick="tapBike()">🚴 따릉이 대여</button>
+            <button class="ms-btn-main" onclick="tapNav()">🧭 길 안내</button>
+          </div>
+  
+---
+Bike()">🚴 따릉이 대여</button>
+            <button class="ms-btn-main" onclick="tapNav()">🧭 길 안내</button>
+          </div>
+          <div class="ms-more" onclick="tapMore()">자세히 보기 ›</div>
+        </div>
+---
+v()">🧭 길 안내</button>
+          </div>
+          <div class="ms-more" onclick="tapMore()">자세히 보기 ›</div>
+        </div>
+
+        <!-- 푸시 배너 -->
+        <div class="push-banner" id="push-banner" onclick="
+---
+      <!-- 푸시 배너 -->
+        <div class="push-banner" id="push-banner" onclick="onPushTap()">
+          <div class="push-icon">📍</div>
+          <div>
+            <div class="push-title">noname 이동 패턴 · 출근 축<
+---
+iv>
+        <div class="star-row" id="star-row">
+          <span class="star" onclick="rateStar(1)">★</span>
+          <span class="star" onclick="rateStar(2)">★</span>
+          <span class="star" onclick="rateStar(3)">★</span
+---
+pan class="star" onclick="rateStar(1)">★</span>
+          <span class="star" onclick="rateStar(2)">★</span>
+          <span class="star" onclick="rateStar(3)">★</span>
+          <span class="star" onclick="rateStar(4)">★</span
+---
+pan class="star" onclick="rateStar(2)">★</span>
+          <span class="star" onclick="rateStar(3)">★</span>
+          <span class="star" onclick="rateStar(4)">★</span>
+          <span class="star" onclick="rateStar(5)">★</span
+---
+pan class="star" onclick="rateStar(3)">★</span>
+          <span class="star" onclick="rateStar(4)">★</span>
+          <span class="star" onclick="rateStar(5)">★</span>
+        </div>
+        <button class="ck-confirm" onclick="
+---
+pan class="star" onclick="rateStar(4)">★</span>
+          <span class="star" onclick="rateStar(5)">★</span>
+        </div>
+        <button class="ck-confirm" onclick="goTo('s-map')">확인</button>
+        <div class="ck-skip" on
+---
+ck="rateStar(5)">★</span>
+        </div>
+        <button class="ck-confirm" onclick="goTo('s-map')">확인</button>
+        <div class="ck-skip" onclick="goTo('s-map')">나중에 평가하기</div>
+      </div>
+    </div>
+
+    <
+---
+-confirm" onclick="goTo('s-map')">확인</button>
+        <div class="ck-skip" onclick="goTo('s-map')">나중에 평가하기</div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+  </div><!-
+---
+>
+        `<button class="rec-pref-chip" data-group="pref" data-val="${p.val}" onclick="togglePref(this)">${p.label}</button>`
+      ).join('');
+    }
+    function togglePref(el) {
+      el.classList.toggle('on');
+      const val =
+---
+>
+    <div class="waypoint-edit-actions">
+      <button class="wp-btn-cancel" onclick="closeWpPopup()">취소</button>
+      <button class="wp-btn-save"   onclick="saveWaypoint('${wpId}','${icon}')">저장</button>
+    </div>`;
+
+  
+---
+" onclick="closeWpPopup()">취소</button>
+      <button class="wp-btn-save"   onclick="saveWaypoint('${wpId}','${icon}')">저장</button>
+    </div>`;
+
+      document.getElementById('map-vp').appendChild(popup);
+      _wpPopup = po
+---
+onfig.map((r, i) =>
+        `<button class="route-btn commute-on" id="rb-${i}" onclick="toggleRoute(${i})"
+          style="background:${r.color};color:#fff;">
+          <span class="route-dot" style="background:rgba(255,255,255,0.8)"
+---
+'🌊'][idx] || '📍';
+      return `<div class="kakao-pin" data-idx="${idx}" onclick="selectPlace(${idx})"
+                style="display:flex;flex-direction:column;align-items:center;cursor:pointer;padding-bottom:8px">
+        <div
+---
+unction makeWaypointHTML(wp) {
+      return `<div class="map-pin waypoint-pin" onclick="editWaypoint(this,'${wp.id}')"
+               style="cursor:pointer">
+        <div class="pin-bubble" style="display:flex;flex-direction:column;al
+---
