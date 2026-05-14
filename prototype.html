@@ -875,6 +875,12 @@
       padding: 0 16px 12px;
       overflow-x: auto;
       scrollbar-width: none;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .cat-scroll.dragging {
+      cursor: grabbing;
     }
 
     .cat-scroll::-webkit-scrollbar {
@@ -1105,10 +1111,21 @@
       background: #ecfdf5;
     }
 
+    @keyframes pin-pulse {
+      0%   { box-shadow: 0 0 0 0   rgba(124,58,237,.7), 0 5px 18px rgba(124,58,237,.45); }
+      65%  { box-shadow: 0 0 0 11px rgba(124,58,237,0),  0 5px 18px rgba(124,58,237,.45); }
+      100% { box-shadow: 0 0 0 0   rgba(124,58,237,0),  0 5px 18px rgba(124,58,237,.45); }
+    }
+
     .disc-bubble.selected {
+      background: #7c3aed;
       border-color: #7c3aed;
-      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2), 0 4px 14px rgba(124, 58, 237, 0.4);
-      transform: scale(1.25);
+      transform: scale(1.45);
+      animation: pin-pulse 1.6s ease-out infinite;
+    }
+
+    .disc-bubble.selected::after {
+      border-top-color: #7c3aed;
     }
 
     /* 장소 핀 — 아래 뾰족 꼬리 */
@@ -1155,9 +1172,32 @@
       cursor: pointer;
     }
 
-    .waypoint-pin:hover .pin-label {
-      background: #f5f3ff;
-      color: #7c3aed;
+    .waypoint-pin:hover .wp-label-card {
+      background: #f8f5ff;
+    }
+
+    .wp-label-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 5px 12px;
+      box-shadow: 0 2px 14px rgba(0,0,0,.11), 0 1px 3px rgba(0,0,0,.07);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .wp-label-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.2px;
+    }
+
+    .wp-label-role {
+      font-size: 9.5px;
+      font-weight: 600;
+      margin-top: 1px;
     }
 
     /* 거점 편집 팝업 */
@@ -1424,13 +1464,185 @@
       margin-top: 5px;
     }
 
+    /* ── View Toggle Button ── */
+    .view-toggle {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .view-toggle.list-active {
+      background: #7c3aed;
+      border-color: #7c3aed;
+    }
+
+    /* ── List View (map-vp 위에 absolute overlay) ── */
+    #list-view {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 40;
+      overflow-y: auto;
+      background: #f9fafb;
+      display: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    #list-view::-webkit-scrollbar { display: none; }
+
+    .lv-empty {
+      padding: 48px 16px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+    .lv-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      background: #fff;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .lv-item:active,
+    .lv-item.sel { background: #faf5ff; }
+    .lv-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      flex-shrink: 0;
+    }
+    .lv-info { flex: 1; min-width: 0; }
+    .lv-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lv-sub {
+      font-size: 11.5px;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+    .lv-dist { color: #7c3aed; font-weight: 600; }
+    .lv-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      margin-right: 4px;
+      color: #fff;
+    }
+    .lv-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+      flex-shrink: 0;
+    }
+    .lv-stars { font-size: 12px; color: #f59e0b; font-weight: 700; }
+    .lv-reviews { font-size: 10.5px; color: #9ca3af; }
+
+    /* ── Mileage Button ── */
+    .ms-mileage { padding: 4px 16px 16px; }
+    .mileage-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 13px 14px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: background .12s;
+    }
+    .mileage-btn:active { background: #f3f4f6; }
+    .mileage-emoji { font-size: 22px; flex-shrink: 0; }
+    .mileage-info { flex: 1; min-width: 0; }
+    .mileage-label { font-size: 14px; font-weight: 700; color: #374151; }
+    .mileage-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .mileage-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .mileage-pts {
+      font-size: 13px;
+      font-weight: 800;
+      color: #9ca3af;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 3px 9px;
+    }
+    .mileage-lock { font-size: 11px; color: #d1d5db; }
+
+    /* ── Toss-style Toast ── */
+    .toss-toast {
+      position: absolute;
+      bottom: -130px;
+      left: 12px;
+      right: 12px;
+      z-index: 200;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 36px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: bottom .36s cubic-bezier(0.32,0.72,0,1);
+      pointer-events: none;
+    }
+    .toss-toast.show {
+      bottom: 20px;
+      pointer-events: auto;
+    }
+    .tt-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #fef9c3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .tt-body { flex: 1; min-width: 0; }
+    .tt-title { font-size: 13.5px; font-weight: 700; color: #111; line-height: 1.3; }
+    .tt-desc { font-size: 12px; color: #6b7280; margin-top: 3px; line-height: 1.4; }
+    .tt-close {
+      background: none; border: none;
+      font-size: 15px; color: #9ca3af;
+      cursor: pointer; padding: 0; flex-shrink: 0;
+    }
+
     /* ── Mini Bottom Sheet ── */
     .mini-sheet {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      z-index: 50;
+      z-index: 55;
       width: 100%;
       max-width: 100%;
       background: #fff;
@@ -1565,10 +1777,29 @@
       padding: 10px 6px;
       text-align: center;
       border-right: 1px solid #ede9fe;
+      cursor: pointer;
+      transition: background .12s;
     }
 
     .ms-tcell:last-child {
       border-right: none;
+    }
+
+    .ms-tcell:hover {
+      background: #faf8ff;
+    }
+
+    .ms-tcell.active {
+      background: var(--tc-bg, #eff6ff);
+    }
+
+    .ms-tcell.active .tc-time {
+      color: var(--tc-color, #3b82f6);
+    }
+
+    .ms-tcell.unavailable {
+      opacity: 0.4;
+      cursor: default;
     }
 
     .tc-icon {
@@ -1588,50 +1819,84 @@
       margin-top: 2px;
     }
 
-    .ms-actions {
-      display: flex;
-      gap: 9px;
-      padding: 12px 16px 0;
+    /* ── 바텀시트 내 길안내 패널 ── */
+    .nav-detail {
+      border-top: 1px solid #f3f4f6;
+      background: #fff;
+      padding: 18px 20px 24px;
+      animation: slideDown .22s ease;
     }
 
-    .ms-btn-sub {
-      flex: 1;
-      background: #f5f3ff;
-      color: #7c3aed;
-      border: 1.5px solid #c4b5fd;
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .nd-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .nd-icon-wrap {
+      width: 42px;
+      height: 42px;
       border-radius: 13px;
-      padding: 13px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
+      background: var(--nd-bg, #eff6ff);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      font-size: 20px;
+      flex-shrink: 0;
     }
 
-    .ms-btn-main {
+    .nd-info {
       flex: 1;
-      background: #7c3aed;
-      color: #fff;
+      min-width: 0;
+      padding-top: 2px;
+    }
+
+    .nd-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.3;
+    }
+
+    .nd-hint {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    .nd-close {
+      flex-shrink: 0;
+      background: #f3f4f6;
       border: none;
-      border-radius: 13px;
-      padding: 13px;
-      font-size: 14px;
-      font-weight: 700;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+      color: #9ca3af;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      margin-top: 1px;
     }
 
-    .ms-btn-sub:active {
-      background: #ede9fe;
-    }
-
-    .ms-btn-main:active {
-      background: #6d28d9;
+    .nd-bike-btn {
+      margin-top: 14px;
+      width: 100%;
+      background: #f0fdf4;
+      color: #059669;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .ms-more {
@@ -2399,13 +2664,26 @@
               <span class="consent-label">승·하차 이력 분석</span>
               <span class="tag-req">필수</span>
             </div>
-            <label class="sw"><input type="checkbox" id="sw-commute" onchange="onCommuteToggle()">
+            <label class="sw"><input type="checkbox" id="sw-commute" onchange="onRequiredToggle()">
               <div class="sw-track"></div>
             </label>
           </div>
           <div class="consent-desc">최근 30일 대중교통 이력으로 생활권 지도를 생성합니다.</div>
         </div>
 
+
+        <div class="consent-item required" id="consent-item-location">
+          <div class="consent-row">
+            <div class="consent-label-wrap">
+              <span class="consent-label">위치 정보 이용</span>
+              <span class="tag-req">필수</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="sw-location" onchange="onRequiredToggle()">
+              <div class="sw-track"></div>
+            </label>
+          </div>
+          <div class="consent-desc">이동 경로 중 근처 장소 알림 및 마일리지 자동 인증에 사용합니다.</div>
+        </div>
 
         <div class="consent-item">
           <div class="consent-row">
@@ -2513,6 +2791,7 @@
             <button class="map-back" onclick="goTo('s-travel')">←</button>
             <span class="map-title">📍 가는김에</span>
           </div>
+          <button class="view-toggle" id="view-toggle" onclick="toggleView()">☰</button>
         </div>
         <div class="cat-scroll" id="cat-scroll">
           <button class="cat-chip on" data-filter="all" onclick="setCat(this)">전체</button>
@@ -2534,11 +2813,6 @@
           <div class="map-info-title" id="map-info-title">강유진 님의 자주가는 노선</div>
           <div id="map-info-routes"></div>
           <div class="map-info-period" id="map-info-period"></div>
-        </div>
-        <div class="map-legend">
-          <span class="legend-item"><i class="legend-dot" style="background:#059669"></i>노선 근접</span>
-          <span class="legend-item"><i class="legend-dot" style="background:#f59e0b"></i>중간</span>
-          <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>노선 멀</span>
         </div>
 
         <!-- 노선 토글 패널 (지도 우측 오버레이, JS로 동적 렌더링) -->
@@ -2596,11 +2870,70 @@
                 <div class="card-cat">쇼핑 · 도보 5분</div>
               </div>
             </div>
+            <div class="place-card" id="c-14" onclick="selectPlace(14)">
+              <div class="card-thumb" style="background:#fff7ed">🍲<span class="card-tag"
+                  style="background:#f97316">맛집</span></div>
+              <div class="card-body">
+                <div class="card-name">동대문 24시 해장국</div>
+                <div class="card-cat">한식 · 도보 2분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-15" onclick="selectPlace(15)">
+              <div class="card-thumb" style="background:#fdf4ff">🎨<span class="card-tag"
+                  style="background:#8b5cf6">문화</span></div>
+              <div class="card-body">
+                <div class="card-name">인사동 쌈지길</div>
+                <div class="card-cat">갤러리 · 도보 6분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-16" onclick="selectPlace(16)">
+              <div class="card-thumb" style="background:#f0f9ff">🏪<span class="card-tag"
+                  style="background:#ec4899">쇼핑</span></div>
+              <div class="card-body">
+                <div class="card-name">세운상가 옥상 정원</div>
+                <div class="card-cat">복합문화 · 도보 3분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-17" onclick="selectPlace(17)">
+              <div class="card-thumb" style="background:#f0fdf4">📖<span class="card-tag"
+                  style="background:#2563eb">자기계발</span></div>
+              <div class="card-body">
+                <div class="card-name">종로 스터디카페 24</div>
+                <div class="card-cat">스터디카페 · 도보 4분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-18" onclick="selectPlace(18)">
+              <div class="card-thumb" style="background:#fef9c3">🎲<span class="card-tag"
+                  style="background:#059669">놀거리</span></div>
+              <div class="card-body">
+                <div class="card-name">보드게임카페 종로본점</div>
+                <div class="card-cat">게임·오락 · 도보 5분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-19" onclick="selectPlace(19)">
+              <div class="card-thumb" style="background:#ecfdf5">🎡<span class="card-tag"
+                  style="background:#059669">놀거리</span></div>
+              <div class="card-body">
+                <div class="card-name">어린이대공원</div>
+                <div class="card-cat">공원·야외 · 도보 8분</div>
+              </div>
+            </div>
+            <div class="place-card" id="c-20" onclick="selectPlace(20)">
+              <div class="card-thumb" style="background:#fce7f3">👗<span class="card-tag"
+                  style="background:#ec4899">쇼핑</span></div>
+              <div class="card-body">
+                <div class="card-name">두타몰 동대문</div>
+                <div class="card-cat">패션·쇼핑몰 · 도보 5분</div>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- ── 리스트 뷰 (map-vp 위에 absolute overlay) ── -->
+        <div id="list-view"></div>
+
         <!-- ── 미니 바텀시트 ── -->
-        <div class="mini-sheet" id="mini-sheet">
+      <div class="mini-sheet" id="mini-sheet">
           <div class="ms-handle"></div>
           <div class="ms-head">
             <div>
@@ -2622,31 +2955,63 @@
           <div class="ms-transit-wrap">
             <div class="ms-transit-hdr" id="ms-transit-hdr">종로3가역 기준</div>
             <div class="ms-transit">
-              <div class="ms-tcell">
+              <div class="ms-tcell" id="tc-walk" onclick="tapTransit('walk')">
                 <div class="tc-icon">🚶</div>
                 <div class="tc-time" id="ms-walk">—</div>
                 <div class="tc-label">도보</div>
               </div>
-              <div class="ms-tcell">
+              <div class="ms-tcell" id="tc-bike" onclick="tapTransit('bike')">
                 <div class="tc-icon">🚲</div>
                 <div class="tc-time" id="ms-bike">—</div>
                 <div class="tc-label">자전거·킥보드</div>
               </div>
-              <div class="ms-tcell">
+              <div class="ms-tcell" id="tc-bus" onclick="tapTransit('bus')">
                 <div class="tc-icon">🚌</div>
                 <div class="tc-time" id="ms-bus">—</div>
                 <div class="tc-label">버스</div>
               </div>
             </div>
           </div>
-          <div class="ms-actions">
-            <button class="ms-btn-sub" onclick="tapBike()">🚴 따릉이 대여</button>
-            <button class="ms-btn-main" onclick="tapNav()">🧭 길 안내</button>
+          <!-- 길안내 상세 패널 (이동수단 탭 클릭 시 펼쳐짐) -->
+          <div class="nav-detail" id="nav-detail" style="display:none">
+            <div class="nd-row">
+              <div class="nd-icon-wrap">
+                <div id="nd-icon">🚶</div>
+              </div>
+              <div class="nd-info">
+                <div class="nd-title" id="nd-title">도보 길 안내</div>
+                <div class="nd-hint" id="nd-hint"></div>
+              </div>
+              <button class="nd-close" onclick="stopNav()">✕</button>
+            </div>
+            <button class="nd-bike-btn" id="nd-bike-btn" onclick="tapDdarungi()" style="display:none">🚲 따릉이 대여 앱 바로가기</button>
           </div>
-          <div class="ms-more" onclick="tapMore()">자세히 보기 ›</div>
+          <!-- 마일리지 적립 -->
+          <div class="ms-mileage">
+            <button class="mileage-btn" id="mileage-btn" onclick="claimMileage()">
+              <div class="mileage-emoji">⭐</div>
+              <div class="mileage-info">
+                <div class="mileage-label">마일리지 받기</div>
+                <div class="mileage-sub" id="mileage-sub">현장 도착 후 GPS 인증 시 자동 적립</div>
+              </div>
+              <div class="mileage-badge">
+                <div class="mileage-pts" id="mileage-pts">+50M</div>
+                <div class="mileage-lock">🔒 위치 인증 필요</div>
+              </div>
+            </button>
+          </div>
         </div>
 
-      
+        <!-- 토스 스타일 토스트 -->
+        <div class="toss-toast" id="toss-toast">
+          <div class="tt-icon-wrap">📍</div>
+          <div class="tt-body">
+            <div class="tt-title" id="tt-title">아직 이동 중이에요 🚇</div>
+            <div class="tt-desc" id="tt-desc">장소에 도착하면 마일리지가 자동으로 적립돼요!</div>
+          </div>
+          <button class="tt-close" onclick="closeTossToast()">✕</button>
+        </div>
+
         <!-- 인앱 알림 카드 -->
         <div class="notif-card" id="notif-card">
           <div class="notif-header">
@@ -2657,7 +3022,7 @@
           <button class="notif-cta" id="notif-cta" onclick="onNotifCta()"></button>
           <div class="notif-dismiss" onclick="dismissNotif()">닫기</div>
         </div>
-</div><!-- /map-vp -->
+      </div><!-- /map-vp -->
     </div><!-- /s-map -->
 
 
@@ -2701,8 +3066,9 @@
         status: '영업중', statusTone: 'open', hours: '11:00 ~ 22:00',
         rating: 4.1, reviewCount: 86,
         transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        navHint: { walk: '3번 출구 → 낙원상가 방향 직진 250m', bike: '역 앞 거치대 → 낙원상가길 250m', bus: '종로3가 정류장 → 1정거장 하차' },
         filters: ['food', 'breakfast'],
-        personas: ['직장인', '대학생'],
+        personas: ['직장인'],
       },
       // idx 1: 맛집 · 카페 (직장인 cafe / 프리랜서 workspace)
       {
@@ -2710,6 +3076,7 @@
         status: '영업중', statusTone: 'open', hours: '10:00 ~ 21:00',
         rating: 4.3, reviewCount: 214,
         transitBase: '종로3가역', walk: '5분', bike: '3분', bus: '6분',
+        navHint: { walk: '1번 출구 → 인사동길 직진 400m', bike: '역 앞 거치대 → 인사동 입구 400m', bus: '종로3가 정류장 → 2정거장 하차' },
         filters: ['food', 'cafe', 'workspace'],
         personas: ['직장인', '프리랜서'],
       },
@@ -2719,6 +3086,7 @@
         status: '영업중', statusTone: 'open', hours: '12:00 ~ 22:00',
         rating: 4.6, reviewCount: 312,
         transitBase: '혜화역', walk: '1분', bike: '<1분', bus: '3분',
+        navHint: { walk: '2번 출구 → 좌회전 후 직진 100m', bike: '1번 출구 앞 거치대 → 직진 100m', bus: '혜화 정류장 → 1정거장 하차' },
         filters: ['food', 'after-work', 'breakfast'],
         personas: ['직장인', '대학생'],
       },
@@ -2728,6 +3096,7 @@
         status: '개방중', statusTone: 'open', hours: '24시간',
         rating: 4.5, reviewCount: 2310,
         transitBase: '여의나루역', walk: '3분', bike: '5분', bus: '—',
+        navHint: { walk: '2번 출구 → 한강 방향 직진 250m', bike: '역 앞 거치대 → 한강 자전거길 이용', bus: null },
         filters: ['fun', 'leisure'],
         personas: ['프리랜서'],
       },
@@ -2737,6 +3106,7 @@
         status: '영업중', statusTone: 'open', hours: '10:30 ~ 22:00',
         rating: 4.2, reviewCount: 430,
         transitBase: '용산역', walk: '5분', bike: '3분', bus: '7분',
+        navHint: { walk: '3번 출구 → 아이파크몰 방향 350m', bike: '역 앞 거치대 → 아이파크몰 방향 350m', bus: '용산역 정류장 → 2정거장 하차' },
         filters: ['fun', 'errands'],
         personas: ['프리랜서'],
       },
@@ -2746,6 +3116,7 @@
         status: '영업중', statusTone: 'open', hours: '17:00 ~ 01:00',
         rating: 4.0, reviewCount: 88,
         transitBase: '종로3가역', walk: '4분', bike: '2분', bus: '5분',
+        navHint: { walk: '5번 출구 → 직진 후 우회전 300m', bike: '역 앞 거치대 → 골목길 300m', bus: '종로3가 정류장 → 2정거장 하차' },
         filters: ['food', 'after-work'],
         personas: ['직장인'],
       },
@@ -2755,6 +3126,7 @@
         status: '영업중', statusTone: 'open', hours: '17:00 ~ 01:00',
         rating: 4.1, reviewCount: 63,
         transitBase: '군자역', walk: '3분', bike: '2분', bus: '—',
+        navHint: { walk: '1번 출구 → 우회전 후 직진 230m', bike: '역 앞 거치대 → 직진 230m', bus: null },
         filters: ['food', 'after-study'],
         personas: ['대학생'],
       },
@@ -2764,6 +3136,7 @@
         status: '영업중', statusTone: 'open', hours: '11:30 ~ 22:00',
         rating: 4.5, reviewCount: 310,
         transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        navHint: { walk: '4번 출구 → 피마길 방향 직진 220m', bike: '역 앞 거치대 → 피마길 방향 220m', bus: '종로3가 정류장 → 1정거장 하차' },
         filters: ['food', 'meeting-meal'],
         personas: ['프리랜서'],
       },
@@ -2773,15 +3146,17 @@
         status: '영업중', statusTone: 'open', hours: '07:30 ~ 22:00',
         rating: 4.1, reviewCount: 77,
         transitBase: '을지로3가역', walk: '2분', bike: '1분', bus: '4분',
+        navHint: { walk: '7번 출구 → 을지트윈타워 방향 150m', bike: '역 앞 거치대 → 을지트윈타워 방향 150m', bus: '을지로3가 정류장 → 2정거장 하차' },
         filters: ['study', 'cafe', 'workspace'],
         personas: ['프리랜서'],
       },
       // idx 9: 자기계발 · 스터디카페 (대학생 study-cafe)
       {
-        name: '작심스터디카페 충무로역점', cat: '자기계발 · 스터디카페',
+        name: '작심스터디카페 동대입구역점', cat: '자기계발 · 스터디카페',
         status: '영업중', statusTone: 'open', hours: '24시간',
         rating: 4.3, reviewCount: 95,
-        transitBase: '충무로역', walk: '3분', bike: '2분', bus: '—',
+        transitBase: '동대입구역', walk: '3분', bike: '2분', bus: '—',
+        navHint: { walk: '2번 출구 → 직진 후 골목 220m', bike: '역 앞 거치대 → 골목 직진 220m', bus: null },
         filters: ['study', 'study-cafe'],
         personas: ['대학생'],
       },
@@ -2791,6 +3166,7 @@
         status: '공연중', statusTone: 'open', hours: '화~일 19:30',
         rating: 4.4, reviewCount: 178,
         transitBase: '혜화역', walk: '2분', bike: '1분', bus: '4분',
+        navHint: { walk: '2번 출구 → 마로니에공원 방향 150m', bike: '1번 출구 앞 거치대 → 직진 150m', bus: '혜화 정류장 → 1정거장 하차' },
         filters: ['culture'],
         personas: ['대학생'],
       },
@@ -2800,6 +3176,7 @@
         status: '관람가능', statusTone: 'open', hours: '09:00 ~ 18:00',
         rating: 4.7, reviewCount: 5820,
         transitBase: '경복궁역', walk: '5분', bike: '3분', bus: '6분',
+        navHint: { walk: '5번 출구 → 경복궁 정문 방향 400m', bike: '역 앞 거치대 → 세종대로 직진 400m', bus: '경복궁역 정류장 → 1정거장 하차' },
         filters: ['culture'],
         personas: ['대학생'],
       },
@@ -2809,6 +3186,7 @@
         status: '영업중', statusTone: 'open', hours: '10:00 ~ 21:00',
         rating: 4.0, reviewCount: 52,
         transitBase: '종로3가역', walk: '3분', bike: '2분', bus: '4분',
+        navHint: { walk: '3번 출구 → 종로 방향 직진 230m', bike: '역 앞 거치대 → 종로 방향 230m', bus: '종로3가 정류장 → 1정거장 하차' },
         filters: ['shopping', 'errands'],
         personas: ['직장인'],
       },
@@ -2818,8 +3196,79 @@
         status: '개방중', statusTone: 'open', hours: '24시간',
         rating: 4.4, reviewCount: 1840,
         transitBase: '종로3가역', walk: '4분', bike: '2분', bus: '—',
+        navHint: { walk: '7번 출구 → 청계천 방향 직진 300m', bike: '역 앞 거치대 → 청계천 자전거길 직결', bus: null },
         filters: ['fun', 'leisure'],
         personas: ['프리랜서'],
+      },
+      // idx 14: 맛집 · 한식 (대학생 breakfast — 동대입구역 근처)
+      {
+        name: '동대문 24시 해장국', cat: '맛집 · 한식',
+        status: '영업중', statusTone: 'open', hours: '24시간',
+        rating: 4.1, reviewCount: 43,
+        transitBase: '동대입구역', walk: '2분', bike: '1분', bus: '—',
+        navHint: { walk: '4번 출구 → 직진 150m', bike: '역 앞 거치대 → 직진 150m', bus: null },
+        filters: ['food', 'breakfast'],
+        personas: ['대학생'],
+      },
+      // idx 15: 문화 · 공예 (직장인·프리랜서 culture — 종로3가역)
+      {
+        name: '인사동 쌈지길', cat: '문화 · 공예/갤러리',
+        status: '영업중', statusTone: 'open', hours: '10:30 ~ 20:00',
+        rating: 4.3, reviewCount: 1240,
+        transitBase: '종로3가역', walk: '6분', bike: '3분', bus: '7분',
+        navHint: { walk: '1번 출구 → 인사동길 직진 500m', bike: '역 앞 거치대 → 인사동길 500m', bus: '종로3가 정류장 → 2정거장 하차' },
+        filters: ['culture'],
+        personas: ['직장인', '프리랜서'],
+      },
+      // idx 16: 쇼핑 · 복합문화 (프리랜서 shopping — 을지로3가역)
+      {
+        name: '세운상가 옥상 정원', cat: '쇼핑 · 복합문화공간',
+        status: '개방중', statusTone: 'open', hours: '10:00 ~ 21:00',
+        rating: 4.2, reviewCount: 610,
+        transitBase: '을지로3가역', walk: '3분', bike: '2분', bus: '5분',
+        navHint: { walk: '4번 출구 → 세운상가 방향 직진 200m', bike: '역 앞 거치대 → 세운상가 방향 200m', bus: '을지로3가 정류장 → 1정거장 하차' },
+        filters: ['shopping'],
+        personas: ['프리랜서'],
+      },
+      // idx 17: 자기계발 · 스터디카페 (직장인 study — 종로3가역)
+      {
+        name: '종로 스터디카페 24', cat: '자기계발 · 스터디카페',
+        status: '영업중', statusTone: 'open', hours: '24시간',
+        rating: 4.0, reviewCount: 48,
+        transitBase: '종로3가역', walk: '4분', bike: '2분', bus: '—',
+        navHint: { walk: '1번 출구 → 낙원상가 방향 직진 후 좌회전 300m', bike: '역 앞 거치대 → 낙원상가 방향 300m', bus: null },
+        filters: ['study', 'workspace'],
+        personas: ['직장인'],
+      },
+      // idx 18: 놀거리 · 게임 (직장인 fun — 종로3가역)
+      {
+        name: '보드게임카페 종로본점', cat: '놀거리 · 게임/오락',
+        status: '영업중', statusTone: 'open', hours: '12:00 ~ 24:00',
+        rating: 4.2, reviewCount: 134,
+        transitBase: '종로3가역', walk: '5분', bike: '3분', bus: '—',
+        navHint: { walk: '3번 출구 → 우회전 후 직진 380m', bike: '역 앞 거치대 → 종각 방향 380m', bus: null },
+        filters: ['fun'],
+        personas: ['직장인'],
+      },
+      // idx 19: 놀거리 · 공원 (대학생 fun — 군자역)
+      {
+        name: '어린이대공원', cat: '놀거리 · 공원/야외',
+        status: '개방중', statusTone: 'open', hours: '05:00 ~ 22:00',
+        rating: 4.5, reviewCount: 3140,
+        transitBase: '군자역', walk: '8분', bike: '4분', bus: '—',
+        navHint: { walk: '1번 출구 → 능동로 직진 650m', bike: '역 앞 거치대 → 능동로 직진 650m', bus: null },
+        filters: ['fun'],
+        personas: ['대학생'],
+      },
+      // idx 20: 쇼핑 · 패션 (대학생 shopping — 동대입구역)
+      {
+        name: '두타몰 동대문', cat: '쇼핑 · 패션/쇼핑몰',
+        status: '영업중', statusTone: 'open', hours: '10:30 ~ 23:00',
+        rating: 4.0, reviewCount: 870,
+        transitBase: '동대입구역', walk: '5분', bike: '3분', bus: '—',
+        navHint: { walk: '3번 출구 → 동대문 방향 직진 400m', bike: '역 앞 거치대 → 동대문 방향 400m', bus: null },
+        filters: ['shopping'],
+        personas: ['대학생'],
       },
     ];
     // 출퇴근 노선 경로 샘플 포인트 (SVG 좌표)
@@ -2873,10 +3322,10 @@
     function _resetConsent() {
       // 토글 전체 초기화
       const sw = document.getElementById('sw-commute');
-      const swH = document.getElementById('sw-history');
+      const swL = document.getElementById('sw-location');
       const swM = document.getElementById('sw-marketing');
       if (sw) sw.checked = false;
-      if (swH) swH.checked = false;
+      if (swL) swL.checked = false;
       if (swM) swM.checked = false;
       // 버튼 비활성화
       const btn = document.getElementById('consent-btn');
@@ -2901,10 +3350,11 @@
         });
       });
     }
-    function onCommuteToggle() {
-      const checked = document.getElementById('sw-commute').checked;
+    function onRequiredToggle() {
+      const commute  = document.getElementById('sw-commute').checked;
+      const location = document.getElementById('sw-location').checked;
       const btn = document.getElementById('consent-btn');
-      if (checked) {
+      if (commute && location) {
         btn.disabled = false;
         btn.style.background = '#7c3aed';
         btn.style.cursor = 'pointer';
@@ -3076,7 +3526,7 @@
       if (_wpPopup) { _wpPopup.remove(); _wpPopup = null; }
 
       const labelEl = document.getElementById(wpId);
-      const currentText = labelEl.textContent.replace(/^[🏠🏢]\s*/, '');
+      const currentText = labelEl.textContent;
 
       const popup = document.createElement('div');
       popup.className = 'waypoint-edit-popup';
@@ -3117,7 +3567,7 @@
     function saveWaypoint(wpId, icon) {
       const val = (document.getElementById('wp-input')?.value || '').trim();
       if (val) {
-        document.getElementById(wpId).textContent = icon + ' ' + val;
+        document.getElementById(wpId).textContent = val;
         showToast('✅ 거점 이름이 저장되었어요');
       }
       closeWpPopup();
@@ -3172,40 +3622,103 @@
     };
 
     function applyInitialFilter() {
-      if (selectedPrefs.length === 0) return;
-      const firstFilter = PREF_TO_FILTER[selectedPrefs[0]] || 'all';
-      const chip = document.querySelector(`.cat-chip[data-filter="${firstFilter}"]`);
+      // 지도 진입 시 항상 전체로 시작 — 설문 결과는 알림 추천에만 활용
+      const chip = document.querySelector('.cat-chip[data-filter="all"]');
       if (chip) setCat(chip);
     }
 
-    // ==== 인앱 알림 카드 ====
-    const NOTIF_CONFIG = {
+    // ==== 인앱 알림 카드 (동적 생성) ====
+
+    // 페르소나 도착역 타이틀
+    const NOTIF_CONTEXT = {
+      '직장인':  {
+        _default:     '이제 곧 종로3가역이에요! 🚇',
+        'after-work': '오늘 퇴근길, 여기 들러보는 건 어때요? 🌙',
+      },
+      '대학생':  {
+        _default:      '곧 동대입구역이에요! 🚇',
+        'after-study': '곧 군자역이에요! 🚇',
+        'culture':     '지금 혜화역 지나는 중이에요! 🎭',
+      },
+      '프리랜서': { _default: '인사동 근처 지나는 중이에요! ✨' },
+    };
+
+    // pref → 장소 index (페르소나별)
+    const PREF_TO_PLACE_IDX = {
       '직장인': {
-        title: '이제 곧 종로3가역에서 내리시겠네요! 🚇',
-        body:  '오늘 좀 일찍 오셨는데, 종로3가 도착 전 낙원상가 국밥골목 들리는 거 어떠세요? 🍜',
-        cta:   '낙원상가 국밥골목 바로 가기 🍜',
-        placeIdx: 0
+        'breakfast':  0,   // 낙원상가 국밥골목
+        'after-work': 5,   // 도연회포차
+        'cafe':       1,   // 인사동 카페거리 (종로3가역)
+        'errands':   12,   // 다이소 종로본점
       },
       '대학생': {
-        title: '동대문역 코앞이에요! 🚇',
-        body:  '수업 전에 시간 있으시죠? 혜화 스시집 오늘 웨이팅 없대요 🍣',
-        cta:   '혜화 스시집 바로 가기 🍣',
-        placeIdx: 2
+        'breakfast':   14,  // 동대문 24시 해장국 (동대입구역)
+        'after-study':  6,  // 하나양곱창 군자 (군자역)
+        'study-cafe':   9,  // 작심스터디카페 (동대입구역)
+        'culture':     10,  // 대학로 연극 (혜화역)
       },
       '프리랜서': {
-        title: '인사동 근처 지나는 중이에요! ✨',
-        body:  '면담 전에 인사동 카페거리에서 잠깐 쉬어 가는 건 어떠세요? ☕',
-        cta:   '인사동 카페거리 바로 가기 ☕',
-        placeIdx: 1
-      }
+        'breakfast':    7,  // 삼해집
+        'meeting-meal': 7,  // 삼해집
+        'workspace':    8,  // 투썸플레이스
+        'leisure':     13,  // 청계천 (종로3가역 — 프리랜서 경로상)
+      },
     };
+
+    // pref → 바디 문구 생성 함수
+    const PREF_BODY_FN = {
+      'breakfast':    n => `${n} 들러서 아침 한 끼 어떠세요? 🍜`,
+      'after-work':   n => `오늘 퇴근길엔 ${n} 어떠세요? 미리 저장해두세요 🍻`,
+      'after-study':  n => `공부 끝나고 ${n} 어때요? 🍖`,
+      'meeting-meal': n => `미팅 전에 분위기 좋은 ${n} 어떠세요? 🍶`,
+      'cafe':         n => `잠깐 쉬어갈까요? ${n} 자리 있대요 ☕`,
+      'workspace':    n => `작업 공간 찾으시나요? ${n} 지금 자리 있대요 💻`,
+      'study-cafe':   n => `자리 잡고 집중할까요? ${n} 지금 자리 있대요 📚`,
+      'errands':      n => `잠깐 ${n} 들르는 건 어때요? 🛍`,
+      'culture':      n => `${n} 들러보시는 건 어때요? 🎭`,
+      'leisure':      n => `${n} 에서 여유로운 시간 어떠세요? ✨`,
+    };
+
+    const NOTIF_CAT_EMOJI = { food:'🍽', fun:'✨', study:'📚', culture:'🎭', shopping:'🛍' };
+
+    function buildNotifConfig() {
+      const type  = selectedUserType || '직장인';
+      const prefs = selectedPrefs.length > 0 ? selectedPrefs : [];
+      const placeMap = PREF_TO_PLACE_IDX[type] || {};
+
+      // 선택된 pref 중 매핑된 첫 번째 장소 사용
+      let placeIdx   = -1;
+      let matchedPref = null;
+      for (const pref of prefs) {
+        if (placeMap[pref] !== undefined) {
+          placeIdx = placeMap[pref];
+          matchedPref = pref;
+          break;
+        }
+      }
+      // 선택 없거나 매핑 실패 → 페르소나 첫 번째 장소로 폴백
+      if (placeIdx < 0) {
+        const keys = Object.keys(placeMap);
+        matchedPref = keys[0] || 'breakfast';
+        placeIdx    = placeMap[matchedPref] ?? 0;
+      }
+
+      const place   = PLACES[placeIdx];
+      const ctx     = NOTIF_CONTEXT[type] || {};
+      const title   = ctx[matchedPref] || ctx._default || '곧 도착해요! 🚇';
+      const bodyFn  = PREF_BODY_FN[matchedPref];
+      const body    = bodyFn ? bodyFn(place.name) : `${place.name} 어떠세요?`;
+      const catKey  = place.filters.find(f => NOTIF_CAT_EMOJI[f]);
+      const emoji   = NOTIF_CAT_EMOJI[catKey] || '✨';
+
+      return { title, body, cta: `${place.name} 바로 가기 ${emoji}`, placeIdx };
+    }
 
     let _notifPlaceIdx = 0;
     let _notifTimer = null;
 
     function showNotif() {
-      const type = selectedUserType || '직장인';
-      const cfg = NOTIF_CONFIG[type] || NOTIF_CONFIG['직장인'];
+      const cfg = buildNotifConfig();
       _notifPlaceIdx = cfg.placeIdx;
 
       const card = document.getElementById('notif-card');
@@ -3222,11 +3735,23 @@
 
     function onNotifCta() {
       dismissNotif();
+      const p = PLACES[_notifPlaceIdx];
+      const CAT_KEYS = ['food', 'culture', 'fun', 'study', 'shopping'];
+      const catFilter = (p && p.filters && p.filters.find(f => CAT_KEYS.includes(f))) || 'all';
+      const chip = document.querySelector(`.cat-chip[data-filter="${catFilter}"]`);
+      if (chip) setCat(chip);
       selectPlaceForced(_notifPlaceIdx);
     }
 
     // 알림 CTA용: 필터 무시 + 줌인 + 바텀시트 오픈
     function selectPlaceForced(idx) {
+      // 알림 CTA: 리스트뷰라면 지도뷰로 전환
+      if (listMode) {
+        listMode = false;
+        document.getElementById('list-view').style.display = 'none';
+        const btn = document.getElementById('view-toggle');
+        if (btn) { btn.classList.remove('list-active'); btn.textContent = '☰'; }
+      }
       const p = PLACES[idx];
       const coord = PLACE_COORDS[idx];
       currentPlace = idx;
@@ -3266,6 +3791,10 @@
       document.getElementById('ms-bike').textContent = p.bike;
       document.getElementById('ms-bus').textContent  = p.bus;
 
+      const pts = PLACE_MILES[idx] || 30;
+      const ptsEl = document.getElementById('mileage-pts');
+      if (ptsEl) ptsEl.textContent = `+${pts}M`;
+
       openSheet();
     }
 
@@ -3273,7 +3802,7 @@
     // 페르소나별 도착역 직전 좌표
     const MY_LOC_COORDS = {
       '직장인':  { lat: 37.5800, lng: 126.9983, label: '혜화→종로3가 이동 중' },
-      '대학생':  { lat: 37.5637, lng: 127.0054, label: '동대문역 코앞' },
+      '대학생':  { lat: 37.5637, lng: 127.0054, label: '동대입구역 도착 직전' },
       '프리랜서': { lat: 37.5665, lng: 126.9920, label: '이동 중' },
     };
 
@@ -3308,14 +3837,156 @@
       document.getElementById('loc-btn').style.bottom = bottom;
     }
 
-    function tapBike() {
-      showToast('🚴 가까운 따릉이 대여소를 찾는 중...');
-      setTimeout(() => showToast('✅ 반경 300m 내 따릉이 대여소 3곳을 찾았습니다'), 1600);
+    // 거점역 좌표 룩업
+    const TRANSIT_STATION_COORDS = {
+      '노원역':     { lat: 37.6559, lng: 127.0642 },
+      '혜화역':     { lat: 37.5822, lng: 127.0020 },
+      '종로3가역':  { lat: 37.5713, lng: 126.9920 },
+      '동대입구역': { lat: 37.5608, lng: 127.0046 },
+      '군자역':     { lat: 37.5488, lng: 127.0753 },
+      '여의나루역': { lat: 37.5263, lng: 126.9339 },
+      '용산역':     { lat: 37.5298, lng: 126.9646 },
+      '을지로3가역': { lat: 37.5665, lng: 126.9920 },
+      '경복궁역':   { lat: 37.5762, lng: 126.9770 },
+    };
+
+    let navPolyline = null;
+    let activeNavMode = null;
+
+    const NAV_MODE_CONFIG = {
+      walk: { color: '#3b82f6', bg: '#eff6ff', style: 'shortdash', label: '도보',        icon: '🚶', weight: 5 },
+      bike: { color: '#10b981', bg: '#f0fdf4', style: 'dot',       label: '자전거·킥보드', icon: '🚲', weight: 5 },
+      bus:  { color: '#f59e0b', bg: '#fffbeb', style: 'solid',     label: '버스',        icon: '🚌', weight: 5 },
+    };
+
+    function tapTransit(mode) {
+      if (currentPlace < 0) return;
+      const p = PLACES[currentPlace];
+      const placeCoord = PLACE_COORDS[currentPlace];
+      const timeMap = { walk: p.walk, bike: p.bike, bus: p.bus };
+      const time = timeMap[mode];
+
+      if (!time || time === '—') {
+        showToast('해당 수단으로는 이동이 어렵습니다');
+        return;
+      }
+
+      // 같은 모드 재탭 → 안내 종료
+      if (activeNavMode === mode) { stopNav(); return; }
+
+      const originCoord = TRANSIT_STATION_COORDS[p.transitBase];
+      if (!originCoord) { showToast('거점 정보를 찾을 수 없습니다'); return; }
+
+      // 기존 경로 제거
+      if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+
+      const cfg = NAV_MODE_CONFIG[mode];
+      activeNavMode = mode;
+
+      // tcell 활성화
+      document.querySelectorAll('.ms-tcell').forEach(c => {
+        c.classList.remove('active');
+        c.style.removeProperty('--tc-color');
+        c.style.removeProperty('--tc-bg');
+      });
+      const cell = document.getElementById('tc-' + mode);
+      if (cell) {
+        cell.classList.add('active');
+        cell.style.setProperty('--tc-color', cfg.color);
+        cell.style.setProperty('--tc-bg', cfg.bg);
+      }
+
+      // 지도 위에 경로선 그리기
+      if (kakaoMap) {
+        navPolyline = new kakao.maps.Polyline({
+          path: [
+            new kakao.maps.LatLng(originCoord.lat, originCoord.lng),
+            new kakao.maps.LatLng(placeCoord.lat, placeCoord.lng),
+          ],
+          strokeWeight: cfg.weight,
+          strokeColor: cfg.color,
+          strokeOpacity: 0.9,
+          strokeStyle: cfg.style,
+        });
+        navPolyline.setMap(kakaoMap);
+
+        // 두 지점이 모두 보이도록 줌·패닝
+        const midLat = (originCoord.lat + placeCoord.lat) / 2;
+        const midLng = (originCoord.lng + placeCoord.lng) / 2;
+        const span = Math.max(
+          Math.abs(originCoord.lat - placeCoord.lat),
+          Math.abs(originCoord.lng - placeCoord.lng)
+        );
+        const level = span > 0.04 ? 6 : span > 0.015 ? 5 : 4;
+        kakaoMap.setLevel(level);
+        kakaoMap.panTo(new kakao.maps.LatLng(midLat, midLng));
+      }
+
+      // 바텀시트 내 길안내 패널 표시
+      const detail = document.getElementById('nav-detail');
+      detail.style.display = 'block';
+      detail.style.setProperty('--nd-bg', cfg.bg);
+      document.getElementById('nd-icon').textContent = cfg.icon;
+      document.getElementById('nd-title').textContent = cfg.label + ' 길 안내 · ' + time;
+      const hint = p.navHint && p.navHint[mode];
+      document.getElementById('nd-hint').textContent = hint || (p.transitBase + ' → ' + p.name);
+      document.getElementById('nd-bike-btn').style.display = mode === 'bike' ? 'block' : 'none';
+      // 시트 높이 변화 반영
+      requestAnimationFrame(() => {
+        const sheet = document.getElementById('mini-sheet');
+        if (sheet && sheet.classList.contains('open')) {
+          setMapControlsBottom(sheet.offsetHeight + MAP_CONTROL_BOTTOM);
+        }
+      });
     }
-    function tapNav() {
-      closeSheet();
-      showToast('🧭 noname의 반복 경로를 다시 표시합니다');
+
+    function stopNav() {
+      if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+      activeNavMode = null;
+      document.querySelectorAll('.ms-tcell').forEach(c => {
+        c.classList.remove('active');
+        c.style.removeProperty('--tc-color');
+        c.style.removeProperty('--tc-bg');
+      });
+      document.getElementById('nav-detail').style.display = 'none';
+      requestAnimationFrame(() => {
+        const sheet = document.getElementById('mini-sheet');
+        if (sheet && sheet.classList.contains('open')) {
+          setMapControlsBottom(sheet.offsetHeight + MAP_CONTROL_BOTTOM);
+        }
+      });
     }
+
+    function tapDdarungi() {
+      showToast('따릉이 메뉴로 이동합니다');
+    }
+
+    // ── 마일리지 적립 ──
+    let _tossTimer = null;
+
+    function claimMileage() {
+      const p = currentPlace > -1 ? PLACES[currentPlace] : null;
+      const pts = currentPlace > -1 ? (PLACE_MILES[currentPlace] || 30) : 30;
+      const name = p ? p.name : '이 장소';
+
+      const title  = document.getElementById('tt-title');
+      const desc   = document.getElementById('tt-desc');
+      if (title) title.textContent = '아직 이동 중이에요 🚇';
+      if (desc)  desc.textContent  = `${name}에 도착하면 +${pts} 마일리지가 자동으로 적립돼요!`;
+
+      const toast = document.getElementById('toss-toast');
+      if (!toast) return;
+      toast.classList.add('show');
+      if (_tossTimer) clearTimeout(_tossTimer);
+      _tossTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    function closeTossToast() {
+      const toast = document.getElementById('toss-toast');
+      if (toast) toast.classList.remove('show');
+      if (_tossTimer) { clearTimeout(_tossTimer); _tossTimer = null; }
+    }
+
     function tapMore() {
       showToast('장소 상세 정보 페이지로 이동합니다');
     }
@@ -3347,6 +4018,31 @@
     let currentPlace = -1;
     const MAP_CONTROL_BOTTOM = 14;
 
+    // 장소별 마일리지 (방문 난이도·인기도 반영)
+    const PLACE_MILES = [
+      30,  // 0: 낙원상가 국밥골목
+      40,  // 1: 인사동 카페거리
+      50,  // 2: 혜화 스시집
+      30,  // 3: 여의나루 한강공원
+      50,  // 4: 용산 아이파크몰
+      40,  // 5: 도연회포차
+      40,  // 6: 하나양곱창 군자
+      50,  // 7: 삼해집
+      30,  // 8: 투썸플레이스
+      30,  // 9: 작심스터디카페
+      60,  // 10: 대학로 연극
+      80,  // 11: 경복궁
+      20,  // 12: 다이소 종로본점
+      30,  // 13: 청계천
+      20,  // 14: 동대문 24시 해장국
+      50,  // 15: 인사동 쌈지길
+      40,  // 16: 세운상가 옥상 정원
+      20,  // 17: 종로 스터디카페 24
+      40,  // 18: 보드게임카페 종로본점
+      60,  // 19: 어린이대공원
+      30,  // 20: 두타몰 동대문
+    ];
+
     function matchesActiveFilter(place) {
       // 페르소나 필터: 필드가 없는 구버전 장소는 통과
       if (place.personas) {
@@ -3361,18 +4057,25 @@
     const PLACE_COORDS = [
       { lat: 37.5722, lng: 126.9864 },  // 0: 낙원상가 국밥골목
       { lat: 37.5745, lng: 126.9843 },  // 1: 인사동 카페거리
-      { lat: 37.5822, lng: 127.0020 },  // 2: 혜화 스시집
+      { lat: 37.5830, lng: 127.0033 },  // 2: 혜화 스시집 (혜화역에서 NE ~110m)
       { lat: 37.5283, lng: 126.9336 },  // 3: 여의나루 한강공원
       { lat: 37.5300, lng: 126.9647 },  // 4: 용산 아이파크몰
-      { lat: 37.5714, lng: 126.9921 },  // 5: 도연회포차
-      { lat: 37.5488, lng: 127.0753 },  // 6: 하나양곱창 군자
-      { lat: 37.5713, lng: 126.9918 },  // 7: 삼해집
-      { lat: 37.5665, lng: 126.9920 },  // 8: 투썸플레이스 을지트윈타워점
-      { lat: 37.5608, lng: 127.0046 },  // 9: 작심스터디카페 충무로역점
-      { lat: 37.5822, lng: 127.0027 },  // 10: 대학로 연극
+      { lat: 37.5702, lng: 126.9906 },  // 5: 도연회포차 (종로3가역에서 SW ~150m)
+      { lat: 37.5478, lng: 127.0764 },  // 6: 하나양곱창 군자 (군자역에서 SE ~130m)
+      { lat: 37.5722, lng: 126.9934 },  // 7: 삼해집 (종로3가역에서 NE ~150m)
+      { lat: 37.5654, lng: 126.9907 },  // 8: 투썸플레이스 을지트윈타워점 (일지로3가역에서 SW ~130m)
+      { lat: 37.5598, lng: 127.0065 },  // 9: 작심스터디카페 동대입구역점
+      { lat: 37.5833, lng: 127.0014 },  // 10: 대학로 연극 (혜화역에서 N ~120m)
       { lat: 37.5796, lng: 126.9770 },  // 11: 경복궁
-      { lat: 37.5716, lng: 126.9910 },  // 12: 다이소 종로본점
+      { lat: 37.5725, lng: 126.9906 },  // 12: 다이소 종로본점 (종로3가역에서 NW ~140m)
       { lat: 37.5700, lng: 126.9784 },  // 13: 청계천
+      { lat: 37.5620, lng: 127.0035 },  // 14: 동대문 24시 해장국 (동대입구역 SW ~130m)
+      { lat: 37.5750, lng: 126.9885 },  // 15: 인사동 쌈지길 (종로3가역 N ~560m)
+      { lat: 37.5699, lng: 126.9785 },  // 16: 세운상가 옥상 정원 (을지로3가역 W ~170m)
+      { lat: 37.5730, lng: 126.9850 },  // 17: 종로 스터디카페 24 (종로3가역 NW ~310m)
+      { lat: 37.5718, lng: 126.9831 },  // 18: 보드게임카페 종로본점 (종로3가역 NW ~400m)
+      { lat: 37.5490, lng: 127.0810 },  // 19: 어린이대공원 (군자역 E ~650m)
+      { lat: 37.5668, lng: 127.0093 },  // 20: 두타몰 동대문 (동대입구역 S ~450m)
     ];
 
     // 거점
@@ -3385,8 +4088,8 @@
       ],
       '대학생': [
         { lat: 37.6559, lng: 127.0642, id: 'wp-0', icon: '🏠', label: '노원역', role: '출발', color: '#7c3aed' },
-        { lat: 37.5608, lng: 127.0046, id: 'wp-1', icon: '🏫', label: '출무로역', role: '도착(학교)', color: '#2563eb' },
-        { lat: 37.5488, lng: 127.0753, id: 'wp-2', icon: '💼', label: '군자역', role: '도착(알바)', color: '#f97316' },
+        { lat: 37.5608, lng: 127.0046, id: 'wp-1', icon: '🏫', label: '동대입구역', role: '도착', color: '#2563eb' },
+        { lat: 37.5488, lng: 127.0753, id: 'wp-2', icon: '💼', label: '군자역', role: '도착', color: '#f97316' },
       ],
       '프리랜서': [
         { lat: 37.5663, lng: 126.9994, id: 'wp-0', icon: '🏠', label: '일지로4가역', role: '출발', color: '#2563eb' },
@@ -3458,7 +4161,7 @@
       [37.5283, 126.9336],  // 여의나루역 (5호선)
     ];
 
-    // ── 대학생 노선1: 4호선 노원→충무로 (보라 실선) ──
+    // ── 대학생 노선1: 4호선 노원→동대입구 (보라 실선) ──
     const STUDENT_PATH1 = [
       [37.6559, 127.0642],  // 노원역
       [37.6527, 127.0474],  // 창동역
@@ -3472,7 +4175,7 @@
       [37.5822, 127.0020],  // 혜화역
       [37.5783, 127.0042],  // 동대문역
       [37.5655, 127.0088],  // 동대문역사문화공원
-      [37.5608, 127.0046],  // 충무로역
+      [37.5608, 127.0046],  // 동대입구역
     ];
 
     // ── 대학생 노선2: 7호선 노원→군자 (주황 실선) ──
@@ -3525,7 +4228,7 @@
     // ── 사용자 유형별 노선 설정 ──
     const ROUTE_CONFIG = {
       '대학생': [
-        { path: STUDENT_PATH1, color: '#7c3aed', style: 'solid', weight: 8, label: '등하교', busPath: null, desc: '4호선 노원 ↔ 충무로', from: '노원', to: '충무로' },
+        { path: STUDENT_PATH1, color: '#7c3aed', style: 'solid', weight: 8, label: '등하교', busPath: null, desc: '4호선 노원 ↔ 동대입구', from: '노원', to: '동대입구' },
         { path: STUDENT_PATH2, color: '#f97316', style: 'solid', weight: 8, label: '알바', busPath: null, desc: '7호선 노원 ↔ 군자', from: '노원', to: '군자' },
       ],
       '직장인': [
@@ -3757,7 +4460,8 @@
       const col = pinColorByDist(dist);
       const emoji = ['🍜','☕','🍣','🌉','🎡',
                      '🍻','🍖','🍽','💻','📚',
-                     '🎭','🏰','🛍','🌊'][idx] || '📍';
+                     '🎭','🏰','🛍','🌊','🍲',
+                     '🎨','🏪','📖','🎲','🎡','👗'][idx] || '📍';
       return `<div class="kakao-pin" data-idx="${idx}" onclick="selectPlace(${idx})"
                 style="display:flex;flex-direction:column;align-items:center;cursor:pointer;padding-bottom:8px">
         <div class="pin-caption" style="margin-bottom:3px">${p.name}</div>
@@ -3776,19 +4480,29 @@
     }
 
     function makeWaypointHTML(wp) {
-      const roleBg = wp.role === '환승' ? '#f59e0b' : wp.role.includes('도착') ? '#059669' : '#7c3aed';
-      return `<div class="map-pin waypoint-pin" onclick="editWaypoint(this,'${wp.id}')"
-               style="cursor:pointer">
-        <div class="pin-bubble" style="display:flex;flex-direction:column;align-items:center">
-          <div style="font-size:9px;font-weight:700;color:#fff;background:${roleBg};border-radius:5px;padding:1px 6px;margin-bottom:3px;white-space:nowrap">${wp.role}</div>
-          <div class="pin-label waypoint-label" id="${wp.id}" style="background:#fff;border-radius:9px;padding:3px 9px;font-size:10.5px;font-weight:700;color:#1f2937;box-shadow:0 2px 8px rgba(0,0,0,.15);margin-bottom:4px;white-space:nowrap">${wp.icon} ${wp.label}</div>
-          <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3);background:${wp.color}">${wp.icon}</div>
+      return `<div class="map-pin waypoint-pin" onclick="editWaypoint(this,'${wp.id}')">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div class="wp-label-card">
+            <div class="wp-label-name" id="${wp.id}">${wp.label}</div>
+            <div class="wp-label-role" style="color:${wp.color}">${wp.role}</div>
+          </div>
+          <div style="position:relative;width:22px;height:33px;flex-shrink:0">
+            <div style="box-sizing:border-box;width:22px;height:22px;border-radius:50%;background:${wp.color};border:2.5px solid rgba(255,255,255,.88);box-shadow:inset 0 1px 2px rgba(255,255,255,.35),0 4px 16px ${wp.color}55,0 2px 6px rgba(0,0,0,.18)"></div>
+            <div style="position:absolute;top:21px;left:50%;transform:translateX(-50%);width:0;height:0;border-top:12px solid ${wp.color};border-left:7px solid transparent;border-right:7px solid transparent"></div>
+          </div>
         </div>
       </div>`;
     }
 
     // ── mapInit (사용자 유형별 동적 노선) ──
     function mapInit() {
+      // 지도 진입 시 항상 지도뷰로 초기화
+      if (listMode) {
+        listMode = false;
+        document.getElementById('list-view').style.display = 'none';
+        const btn = document.getElementById('view-toggle');
+        if (btn) { btn.classList.remove('list-active'); btn.textContent = '☰'; }
+      }
       const container = document.getElementById('kakao-map');
       if (!container) return;
       if (typeof kakao === 'undefined' || !kakao.maps) {
@@ -3934,23 +4648,91 @@
         const idx = Number(card.id.slice(2));
         card.hidden = !matchesActiveFilter(PLACES[idx]);
       });
+
+      if (listMode) renderListView();
     }
 
-    // ── 핀 클릭 → 지도 이동 ──
+    // ── 지도 ↔ 목록 토글 ──
+    let listMode = false;
+
+    const LV_EMOJIS = ['🍜','☕','🍣','🌉','🎡','🍻','🍖','🍽','💻','📚','🎭','🏰','🛍','🌊','🍲','🎨','🏪','📖','🎲','🎡','👗'];
+    const LV_BG     = ['#fff7ed','#fef3c7','#fce7f3','#ecfdf5','#ecfdf5',
+                       '#fff7ed','#fff7ed','#fff7ed','#eff6ff','#f0fdf4',
+                       '#fdf4ff','#fef9c3','#f0f9ff','#ecfdf5','#fff7ed',
+                       '#fdf4ff','#f0f9ff','#f0fdf4','#fef9c3','#fef3c7','#fce7f3'];
+    const LV_CAT_LABEL = { food:'맛집', culture:'문화', fun:'놀거리', study:'자기계발', shopping:'쇼핑' };
+    const LV_TAG_COLOR = { food:'#f97316', culture:'#8b5cf6', fun:'#059669', study:'#2563eb', shopping:'#ec4899' };
+
+    function toggleView() {
+      listMode = !listMode;
+      const listVp = document.getElementById('list-view');
+      const btn    = document.getElementById('view-toggle');
+      if (listMode) {
+        listVp.style.display = 'block';
+        btn.classList.add('list-active');
+        btn.textContent = '🗺';
+        closeSheet();
+        renderListView();
+      } else {
+        listVp.style.display = 'none';
+        btn.classList.remove('list-active');
+        btn.textContent = '☰';
+      }
+    }
+
+    function renderListView() {
+      const listVp = document.getElementById('list-view');
+      const visible = PLACES.map((p, idx) => ({ p, idx })).filter(({ p }) => matchesActiveFilter(p));
+
+      if (!visible.length) {
+        listVp.innerHTML = '<div class="lv-empty">해당 카테고리의 장소가 없어요</div>';
+        return;
+      }
+
+      listVp.innerHTML = visible.map(({ p, idx }) => {
+        const emoji    = LV_EMOJIS[idx] || '📍';
+        const bg       = LV_BG[idx]     || '#f3f4f6';
+        const catKey   = p.filters.find(f => LV_CAT_LABEL[f]);
+        const catLabel = catKey ? LV_CAT_LABEL[catKey] : '';
+        const tagColor = catKey ? LV_TAG_COLOR[catKey] : '#9ca3af';
+        const r        = (p.rating || 0).toFixed(1);
+        const isSel    = idx === currentPlace;
+        return `<div class="lv-item${isSel ? ' sel' : ''}" id="lv-${idx}" onclick="selectPlace(${idx})">
+          <div class="lv-icon" style="background:${bg}">${emoji}</div>
+          <div class="lv-info">
+            <div class="lv-name">${p.name}</div>
+            <div class="lv-sub">
+              <span class="lv-tag" style="background:${tagColor}">${catLabel}</span>${p.transitBase}에서 <span class="lv-dist">도보 ${p.walk}</span>
+            </div>
+          </div>
+          <div class="lv-right">
+            <div class="lv-stars">★ ${r}</div>
+            <div class="lv-reviews">(${(p.reviewCount||0).toLocaleString()})</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── 핀 / 리스트 아이템 클릭 → 선택 ──
     function selectPlace(idx) {
       if (!matchesActiveFilter(PLACES[idx])) return;
       const p = PLACES[idx];
       const coord = PLACE_COORDS[idx];
       currentPlace = idx;
 
-      // 지도 해당 위치로 이동
-      if (kakaoMap) kakaoMap.panTo(new kakao.maps.LatLng(coord.lat, coord.lng));
+      // 리스트뷰에서 클릭 → 지도뷰로 전환 후 선택
+      if (listMode) {
+        listMode = false;
+        document.getElementById('list-view').style.display = 'none';
+        const btn = document.getElementById('view-toggle');
+        if (btn) { btn.classList.remove('list-active'); btn.textContent = '☰'; }
+      }
 
-      // 핀 강조
+      // 지도 이동 + 핀 강조 + 카드 강조
+      if (kakaoMap) kakaoMap.panTo(new kakao.maps.LatLng(coord.lat, coord.lng));
       document.querySelectorAll('.disc-bubble').forEach(b => b.classList.remove('selected'));
       const db = document.getElementById('db-' + idx);
       if (db) db.classList.add('selected');
-
       document.querySelectorAll('.place-card').forEach(c => c.classList.remove('sel'));
       const card = document.getElementById('c-' + idx);
       if (card) card.classList.add('sel');
@@ -3990,7 +4772,29 @@
         setMapControlsBottom(h + MAP_CONTROL_BOTTOM);
       });
     }
+    // 카테고리 칩 드래그 스크롤
+    (function () {
+      const el = document.getElementById('cat-scroll');
+      if (!el) return;
+      let dragging = false, startX = 0, scrollLeft = 0;
+      el.addEventListener('mousedown', e => {
+        dragging = true;
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+        el.classList.add('dragging');
+        e.preventDefault();
+      });
+      el.addEventListener('mouseleave', () => { dragging = false; el.classList.remove('dragging'); });
+      el.addEventListener('mouseup',    () => { dragging = false; el.classList.remove('dragging'); });
+      el.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const dx = (e.pageX - el.offsetLeft - startX) * 1.4;
+        el.scrollLeft = scrollLeft - dx;
+      });
+    })();
+
     function closeSheet() {
+      stopNav();
       const sheet = document.getElementById('mini-sheet');
       sheet.classList.remove('open');
       sheetOpen = false;
@@ -3998,6 +4802,7 @@
       setMapControlsBottom(MAP_CONTROL_BOTTOM);
       document.querySelectorAll('.disc-bubble').forEach(b => b.classList.remove('selected'));
       document.querySelectorAll('.place-card').forEach(c => c.classList.remove('sel'));
+      document.querySelectorAll('.lv-item').forEach(el => el.classList.remove('sel'));
     }
 
   </script>
